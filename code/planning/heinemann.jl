@@ -1,6 +1,6 @@
-using Pandas, CairoMakie, Jedi, DataFrames, LinearAlgebra, Statistics
+using Pandas, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq
 
-Jedi.styles.default_makie!()
+wgregseq.plotting_style.default_makie()
 
 # Import data. Change path if necessary
 df = DataFrames.DataFrame(Pandas.read_excel("data/heinemann_data.xlsx", sheet_name="Table S6", header=[2]))
