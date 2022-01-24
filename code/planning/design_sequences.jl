@@ -1,19 +1,19 @@
-using wgregseq, FASTX, DataFrames, CSV, BioSequences, CairoMakie, Statistics, StatsBase
+using wgregseq, FASTX, DataFrames, CSV, BioSequences, CairoMakie, Statistics, StatsBase, Dates
 
 # Set path
 dir = @__DIR__
-homedir = joinpath(split(dir, "/")[1:end-2])
+home_dir = joinpath(split(dir, "/")[1:end-2])
 
 # Import genome
-re = open(FASTA.Reader, "/$homedir/data/ecocyc/mg1655_genome.fasta")
+re = open(FASTA.Reader, "/$home_dir/data/ecocyc/mg1655_genome.fasta")
 wt_sequence = [sequence(record) for record in re][1]
 
 # Import gene list to generate sequences for
-gene_table = CSV.read("/$homedir/data/100_genes.csv", DataFrame)
+gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrame)
 
 # Import promoter list and infer types that can be infered automatically
 promoter_list = CSV.read(
-    "/$homedir/data/promoter_list_processed.csv", 
+    "/$home_dir/data/promoter_list_processed.csv", 
     DataFrame, 
     types=Dict(
         "promoter"=>String,
@@ -23,7 +23,7 @@ promoter_list = CSV.read(
 )
 
 operons_without_promoters = CSV.read(
-    "/$homedir/data/operons_without_promoters.csv", 
+    "/$home_dir/data/operons_without_promoters.csv", 
     DataFrame, 
     types=Dict(
         "direction"=>String
@@ -57,7 +57,7 @@ operons_without_promoters.gene_position = parse.(Vector{Float64}, operons_withou
 
 ## Some genes may have the wrong synomym
 all_gene_list = CSV.read(
-    "/$homedir/data/all_genes_table.csv", 
+    "/$home_dir/data/all_genes_table.csv", 
     DataFrame, 
     types=Dict(
         "ID"=>String,
@@ -129,7 +129,7 @@ unique!(df_no_prom)
 # Look for these units in Urtecho et al. 2020 dataset
 # import Urtecho data
 urtecho_tss = CSV.read(
-    "/$homedir/data/urtecho_2020/tss_operon_regulation.txt", 
+    "/$home_dir/data/urtecho_2020/tss_operon_regulation.txt", 
     DataFrame 
 )
 
@@ -254,22 +254,29 @@ dict = Dict{Any, Any}(enzymes .=> sum.(eachcol(df_stack[!, enzymes])))
 dict["gene"] = [String31["all"]]
 dict["promoter"] = "all"
 append!(df_stack, DataFrame(dict))
+println("")
 println(df_stack)
 
 
 enz1 = ""
 enz2 = ""
 
-println("Upstream restriction enzyme:")
+println("Upstream restriction enzyme (default is SalI):")
 while enz1 ∉ wgregseq.enzyme_list.enzyme
     global enz1 = readline()
+    if enz1 == ""
+        global enz1 = "SalI"
+    end
     if enz1 ∉ wgregseq.enzyme_list.enzyme
         println("$enz1 not in list of enzymes")
     end
 end
-println("Downstream restriction enzyme:")
+println("Downstream restriction enzyme (default is SacI):")
 while enz2 ∉ wgregseq.enzyme_list.enzyme
     global enz2 = readline()
+    if enz2 == ""
+        global enz2 = "SacI"
+    end
     if enz2 ∉ wgregseq.enzyme_list.enzyme
         println("$enz2 not in list of enzymes")
     end
@@ -363,5 +370,6 @@ else
 end
 
 ##
-
-df_final
+filename = string(Dates.today()) * "_sequence_list.csv"
+CSV.write("/$home_dir/data/$filename", df_final)
+println("Sequence list saved in `/$home_dir/data/$filename`")

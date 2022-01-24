@@ -6,7 +6,7 @@ using CSV, DataFrames, wgregseq, CairoMakie
 dir = @__DIR__
 home_dir = joinpath(split(dir, '/')[1:end-2]...)
 # Import gene list to generate sequences for
-gene_table = CSV.read("/$homedir/data/100_genes.csv", DataFrame)
+gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrame)
 ##
 # Import promoter data
 df_DB_prom = CSV.read(

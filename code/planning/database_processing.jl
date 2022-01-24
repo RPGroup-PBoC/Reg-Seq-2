@@ -1,17 +1,14 @@
-using wgregseq, FASTX, DataFrames, CSV, BioSequences, CairoMakie, Jedi, StatsBase
-
-# Ser plotting style
-Jedi.styles.default_makie!()
+using wgregseq, FASTX, DataFrames, CSV, BioSequences, CairoMakie,  StatsBase
 
 # Set path
 dir = @__DIR__
-homedir = joinpath(split(dir, "/")[1:end-2])
+home_dir = joinpath(split(dir, "/")[1:end-2])
 
 # Import promoter list and infer types that can be infered automatically
 
 # Promoters from Ecocyc
 promoter_list_ecocyc = CSV.read(
-    "/$homedir/data/promoter_list_ecocyc.csv", 
+    "/$home_dir/data/promoter_list_ecocyc.csv", 
     DataFrame, 
     types=Dict(
         "promoter"=>String,
@@ -22,7 +19,7 @@ promoter_list_ecocyc = CSV.read(
 
 # Promoters from RegulonDB
 promoter_list_regulonDB = CSV.read(
-    "/$homedir/data/promoter_list_regulon_DB.csv", 
+    "/$home_dir/data/promoter_list_regulon_DB.csv", 
     DataFrame, 
     types=Dict(
         "promoter"=>String,
@@ -80,38 +77,7 @@ sort!(_df, "genes")
 df = unique(_df)
 df = df[5:end, :]
 
-CSV.write("/$homedir/data/promoter_list_processed.csv", df)
-
-##
-
-min_distance = Float64[]
-for i in 1:nrow(df)
-    min_dist = minimum(abs.(df.gene_position[i] .- df.tss[i]))
-    push!(min_distance, min_dist)
-end 
-
-df[!, "distance"] = min_distance
-min_distance = min_distance[.~ isnan.(min_distance)]
-sort!(df, "distance", rev=true)
-println(first(df[.~isnan.(df.distance), ["genes", "distance"]], 15))
-##
-fig = Figure(resolution=(300, 300))
-ax = Axis(fig[1, 1], xscale=log10)
-ax.xlabel = "Bases"
-ax.ylabel = "ECDF"
-ax.title = "Distance of TSS to coding region"
-ind = findfirst(x -> x > 0, sort(min_distance))
-lines!(
-    ax, 
-    sort(min_distance)[ind:end], 
-    collect(ind:length(min_distance)) ./ length(min_distance),
-    linewidth=3
-)
-fig
-
-## Save Results
-save("figures/tss_distance.pdf", fig)
-
+CSV.write("/$home_dir/data/promoter_list_processed.csv", df)
 
 ##
 

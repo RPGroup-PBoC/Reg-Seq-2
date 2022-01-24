@@ -14,3 +14,20 @@ To run a script use
 ```julia
 julia> include("path/to/script.jl")
 ```
+
+## code
+
+Contains scripts that can be run to reproduce the experiment, from designing sequences to analyzing sequencing results and making figures.
+
+## data
+
+Contains data files that are either needed for preparing the experiment or is the destination for data files from experiments (not included
+in this repository, can be found at (link)).
+
+## src
+
+Contains software module in Julia used in this project.
+
+## test
+
+Should contain tests of the software module.
