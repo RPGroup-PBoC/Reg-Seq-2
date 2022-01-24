@@ -10,6 +10,8 @@ module plotting_style
 include("plotting_style.jl")
 end
 
-
+module promoter_finder
+include("promoter_finder.jl")
+end
 
 end # module

@@ -26,9 +26,11 @@ name_list = String[]
 TU_list = []
 direction_list = String[]
 position_list = Float64[]
+synonym_list = []
+accession_list = String[]
 
-for x in gene_list[1:2]
-    println(x)
+
+for x in gene_list
     name = filter(x -> x[1] == "UNIQUE-ID", x)
     if ~isempty(name)
         push!(ID_list, name[1][2])
@@ -42,6 +44,17 @@ for x in gene_list[1:2]
     else
         push!(name_list, "None")
     end
+
+    synonyms = filter(x -> x[1] == "SYNONYMS", x)
+    _synonym_list = []
+    if ~isempty(synonyms)
+        for synonym in synonyms
+            push!(_synonym_list, synonym[2])
+        end
+    else
+        push!(_synonym_list, "none")
+    end
+    push!(synonym_list, _synonym_list)
     
     direction = filter(x -> x[1] == "TRANSCRIPTION-DIRECTION", x)
     if ~isempty(direction)
@@ -49,6 +62,15 @@ for x in gene_list[1:2]
     else
         push!(direction_list, "none")
     end
+
+    accession = filter(x -> x[1] == "ACCESSION-1", x)
+    if ~isempty(accession)
+        push!(accession_list, accession[1][2])
+    else
+        push!(accession_list, "none")
+    end
+
+    
     
     components = filter(x -> x[1] == "COMPONENT-OF", x)
     tu_list_gene = []
@@ -81,8 +103,16 @@ for x in gene_list[1:2]
         push!(position_list, NaN)
     end
 end
-df_genes = DataFrame(ID=ID_list, gene=name_list, direction=direction_list, transcription_units=TU_list, gene_position=position_list)
-
+df_genes = DataFrame(
+    ID=ID_list, 
+    gene=name_list, 
+    direction=direction_list, 
+    transcription_units=TU_list, 
+    gene_position=position_list, 
+    synonyms=synonym_list,
+    accession=accession_list
+    )
+CSV.write("/$home_dir/data/all_genes_table.csv", df_genes)
 ##
 # Open Transcription Units
 s = open("/$home_dir/data/ecocyc/transunits.dat") do file
@@ -170,7 +200,6 @@ TSS_list = Float64[]
 evidence_list = []
 
 for x in promoter_list
-    
     name = filter(x -> x[1] == "UNIQUE-ID", x)
     if ~isempty(name)
         push!(ID_list, name[1][2])
@@ -213,6 +242,8 @@ for x in promoter_list
 end
 df_tss = DataFrame(promoter_ID=ID_list, promoter=name_list, tss=TSS_list, evidence=evidence_list)
 
+df_tss
+"rspAp" in name_list
 ##
 # Join DataFrames
 df_joint = outerjoin(df_tu, df_tss, on = :promoter_ID) |> unique
@@ -225,61 +256,19 @@ df_joint.tss = coalesce.(df_joint.tss, NaN)
 df_joint.evidence = coalesce.(df_joint.evidence, [["None"]])
 println("First 20 rows of list:")
 println(first(df_joint, 20))
-
+df_joint
 ##
-# Gold Standard Genes
-
-gold_standards = [
-    "rspA",
-    "araA",
-    "araB",
-    "znuC",
-    "znuB",
-    "xylA",
-    "xylF",
-    "dicC",
-    "relE",
-    "relB",
-    "ftsK",
-    "znuA",
-    "lacI",
-    "marR",
-    "dgoR",
-    "ompR",
-    "dicA",
-    "araC"
-]
 
 # Split DataFrame into promoters with TUs and without
-df_joint
-#=
-df_gs = vcat([df_comp[map(x -> gene in x, df_comp.genes), :] for gene in gold_standards]...) |> unique
-println()
-println("Gold Standard Genes:")
-println(df_gs)
-=#
-#CSV.write("/$home_dir/data/gold_standards.csv", df_gs)
-CSV.write("/$home_dir/data/promoter_list.csv", df_joint)
+df_joint_prom = df_joint[(df_joint.direction .!= "0") .& (.~ isnan.(df_joint.tss)), :]
+CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promoter", "genes", "gene_position", "direction", "tss"]])
+##
+genes_w_promoters = unique(vcat(df_joint_prom.genes...))
+genes_wo_promoters = filter(x -> x ∉ genes_w_promoters, df_genes.gene)
 
-## Regulon DB
-
-CSV.read(
-    "/$home_dir/data/regulonDB/promoter.txt", 
-    DataFrame, 
-    comment="#", 
-    header=[
-        "PROMOTER_ID",
-        "PROMOTER_NAME",
-        "PROMOTER_STRAND",
-        "POS_1",
-        "SIGMA_FACTOR",
-        "BASAL_TRANS_VAL",
-        "EQUILIBRIUM_CONST",
-        "KINETIC_CONST",
-        "STRENGTH_SEQ",
-        "PROMOTER_SEQUENCE",
-        "KEY_ID_ORG",
-        "PROMOTER_NOTE",
-        "PROMOTER_INTERNAL_COMMENT",
-    ]
-)
+df_no_prom = DataFrame()
+for gene in genes_wo_promoters
+    append!(df_no_prom, df_tu[map(x -> gene in x, df_tu.genes), :])
+end
+df_no_prom
+CSV.write("/$home_dir/data/operons_without_promoters.csv", df_no_prom[:, ["genes", "direction", "gene_position"]])

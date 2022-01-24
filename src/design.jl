@@ -32,18 +32,22 @@ function import_primer(index::Int, direction::String)
     path = joinpath(split(dir, '/')[1:end-1])
     if direction == "fwd"
         r = open(FASTA.Reader, "/$path/data/forward_finalprimers.fasta")
+        record = collect(r)[index]
+        return sequence(record)
     elseif direction == "rev"
         r = open(FASTA.Reader, "/$path/data/reverse_finalprimers.fasta")
+        record = collect(r)[index]
+        return sequence(record) |> reverse_complement
     else
         throw(ArgumentError("dir has to be either \"fwd\" or \"rev\""))
     end
 
-    record = collect(r)[index]
-    return sequence(record)
+    
+    
 end
 
 
-function add_primer(oligos::Vector{BioSequences.LongDNASeq}, index::Int, direction::String)
+function add_primer(oligos::Vector{BioSequences.LongDNASeq}, index::Int, direction::String="both")
     if direction == "fwd"
         fwd_primer = import_primer(index, "fwd")
         rev_primer = LongDNASeq("")
@@ -87,7 +91,7 @@ output : string
 function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequences.LongDNASeq)
      
     if strand == "-"
-        gene = genome[TSS-dn:TSS+up]
+        gene = genome[TSS-dn:TSS+up-1]
     
         outgene = LongDNASeq(gene) |> reverse_complement
         
@@ -95,7 +99,7 @@ function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequenc
         right_pos = TSS+up
         
     elseif strand == "+"
-        outgene = genome[TSS-up:TSS+dn]
+        outgene = genome[TSS-up+1:TSS+dn]
         left_pos = TSS-up
         right_pos = TSS+dn
     else
@@ -206,7 +210,7 @@ function mutations_rand(
     mutant_indices = random_mutation_generator(mutation_window, rate, num_mutants)
     
     for x in mutant_indices
-       push!(mutants, sequence[1:site_start] * mutate_from_index(mutation_window, x) * sequence[site_end:end])
+       push!(mutants, sequence[1:site_start-1] * mutate_from_index(mutation_window, x) * sequence[site_end+1:end])
     end
     return mutants
 end

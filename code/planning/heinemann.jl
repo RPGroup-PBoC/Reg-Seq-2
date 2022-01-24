@@ -1,10 +1,11 @@
-using Pandas, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq
+using Pandas, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq, Jedi
 
-wgregseq.plotting_style.default_makie()
+Jedi.styles.default_makie!()
 
 # Import data. Change path if necessary
 df = DataFrames.DataFrame(Pandas.read_excel("data/heinemann_data.xlsx", sheet_name="Table S6", header=[2]))
-
+df[!, "Annotated functional COG group (description)"] |> unique
+df.Gene |> unique |> length
 ##
 growth_conditions = ["Glucose",
  "LB",
@@ -39,15 +40,16 @@ ax1 = Axis(
     ylabel="Total number of proteins",
     xlabel="Growth Conditions"
 )
-lines!(ax1, 1:22, tot_prot)
-scatter!(ax1, 1:22, tot_prot, )
+ind = sortperm(tot_prot, rev=true)
+lines!(ax1, 1:22, tot_prot[ind])
+scatter!(ax1, 1:22, tot_prot[ind], )
 
 ax1.xticklabelrotation = pi/8
 ax1.xticks = 1:length(growth_conditions)
-ax1.xtickformat = x -> growth_conditions
+ax1.xtickformat = x -> growth_conditions[ind]
 ax1.xminorgridwidth = 0
 
-#CairoMakie.save("figures/heinemann_total_protein.pdf", fig)
+CairoMakie.save("figures/heinemann_total_protein.pdf", fig)
 fig
 
 ## Function to plot protein number per gene
@@ -176,4 +178,33 @@ ref_genes = [
 fig = copy_number_plot(
     filter(x -> x in df.Gene, ref_genes), true
     )
+fig
+
+
+## Compare two genes individually
+
+function compare_genes(gene, growth_condition1, growth_condition2)
+    if growth_condition1 ∉ growth_conditions
+        throw(ArgumentError("Growth conditions $growth_condition1 not found!"))
+    elseif growth_condition2 ∉ growth_conditions
+        throw(ArgumentError("Growth conditions $growth_condition2 not found!"))
+    end
+    if (length(df[df[!, "Gene"] .== gene, growth_condition1]) > 0) && (length(df[df[!, "Gene"] .== gene, growth_condition2]) > 0)
+        protein1 = df[df[!, "Gene"] .== gene, growth_condition1][1]
+        protein2 = df[df[!, "Gene"] .== gene, growth_condition2][1]
+        return protein1 / protein2 * sum(df[!, growth_condition2]) / sum(df[!, growth_condition1])
+    else
+        return NaN
+    end
+end
+g1 = "LB"
+g2 = "Stationary phase 1 day"
+x = filter(x -> x > 0, compare_genes.(df[!, "Gene"], g1, g2))
+fig = Figure(resolution=(400, 400))
+ax = Axis(fig[1, 1], xscale = log10)
+lines!(ax, sort(x), range(0, stop=1, length=length(x)))
+ax.xlabel = "Fold Change"
+ax.ylabel = "ECDF"
+ax.title = "Fold Change of normalized protein copy number \n $g1/$g2"
+
 fig
