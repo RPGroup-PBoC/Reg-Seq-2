@@ -1,6 +1,7 @@
 
 using BioSequences, StatsBase, DataFrames, FASTX
 import ..enzyme_list
+using ..wgregseq: promoter_finder.Promoter_Calculator
 
 function join_seqs(up::String, down::String)
     return up * down 
@@ -256,3 +257,91 @@ function find_restriction_sites(enzyme::Vector{String}, sequence_list::Vector{Lo
 
 end
 
+
+"""
+    function find_best_promoter(df)
+
+Find the promoter with the lowest predicited free energy, using the model from
+La Fleur et al, 2022.
+
+#Parameters
+-----------
+df : DataFrame
+    DataFrame containing the transcription start sites for promoters.
+wt_sequence : BioSequences.LongDNASeq
+    Sequence of wild type genome.
+
+#Returns
+df[ind, :] : Dataframe Row
+    Row of DataFrame containing the strongest predicted site.
+
+"""
+function find_best_promoter(df::DataFrames.DataFrame, wt_sequence::BioSequences.LongDNASeq)
+    if "tss" ∉ names(df)
+        throw(ArgumentError("DataFrame has no column \"tss\"."))
+    end
+    if "direction" ∉ names(df)
+        throw(ArgumentError("DataFrame has no column \"tss\"."))
+    end
+    # Find range of possible start sites
+    min_tss = df.tss |> minimum
+    max_tss = df.tss |> maximum
+
+    # Get sequence around start sites
+    sequence = wt_sequence[Int(min_tss)-115:Int(max_tss)+115]
+    
+    # Run model on sequence
+    p = Promoter_Calculator()
+    r = p(sequence)
+    if df.direction[1] == "-"
+        sites = [r["Reverse_Predictions_per_TSS"][x - (Int(min_tss)-115)] for x in df.tss]
+    elseif df.direction[1] == "+"
+        sites = [r["Forward_Predictions_per_TSS"][x - (Int(min_tss)-115)] for x in df.tss]
+    else
+        throw(ArgumentError("Direction has to be either \"+\" or \"-\"."))
+    end
+    # Find strongest site
+    ind = argmin([site["dG_total"] for site in sites])
+    return df[ind, :]
+end
+
+
+"""
+"""
+function check_primers_re_sites(enz1, enz2, primer, direction)
+    site1 = enzyme_list[enzyme_list.enzyme .== enz1, "site"][1] |> LongDNASeq
+    site2 = enzyme_list[enzyme_list.enzyme .== enz2, "site"][1] |> LongDNASeq
+
+    clear = false
+    if direction == "both"
+        while clear == false
+            fwd_primer = import_primer(primer, "fwd")
+            rev_primer = import_primer(primer, "rev")
+            if occursin(site1, fwd_primer)
+                primer += 1
+            elseif occursin(site1, rev_primer)
+                primer += 1
+            elseif occursin(site2, fwd_primer)
+                primer += 1
+            elseif occursin(site2, rev_primer)
+                primer += 1
+            else
+                clear = true
+            end
+        end
+    elseif direction in ["fwd", "rev"]
+        while clear == false
+            _primer = import_primer(primer, direction)
+            if occursin(site1, _primer)
+                primer += 1
+            elseif occursin(site2, _primer)
+                primer += 1
+            else
+                clear = true
+            end
+        end
+    else
+        throw(ArgumentError("direction has to be in [\"both\", \"fwd\", \"rev\"]."))
+    end
+    return primer
+end

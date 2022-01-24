@@ -1,6 +1,5 @@
 using CSV, DataFrames, wgregseq, CairoMakie
 
-wgregseq.plotting_style.default_makie!()
 ##
 # Open Gene information
 dir = @__DIR__

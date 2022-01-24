@@ -2,52 +2,11 @@ using CSV, DataFrames, wgregseq, CairoMakie
 
 ##
 
+# Open Gene information
+dir = @__DIR__
+home_dir = joinpath(split(dir, '/')[1:end-2]...)
 # Import gene list to generate sequences for
 gene_table = CSV.read("/$homedir/data/100_genes.csv", DataFrame)
-
-# Import promoter list and infer types that can be infered automatically
-promoter_list = CSV.read(
-    "/$homedir/data/promoter_list.csv", 
-    DataFrame, 
-    types=Dict(
-        "TU_ID"=>String,
-        "promoter_ID"=>String,
-        "promoter"=>String,
-        "tss"=>Float64,
-        "direction"=>String
-    )
-)
-
-# Define custom function for nice imports
-Base.parse(::Type{Vector{String}}, x::String) = Vector{String}(filter(x-> x != ", ", split(x, "\""))[2:end-1])
-function Base.parse(::Type{Vector{Float64}}, x::String)
-    number = split(split(x, "[")[end][1:end-1], ", ")
-    number_list = Float64[]
-    for num in number
-        if num != ""
-            push!(number_list, parse(Float64, num))
-        else
-            return push!(number_list, NaN)
-        end
-    end
-    return number_list
-
-end
-Base.parse(::Type{Vector{String}}, x::Missing) = String[]
-Base.parse(::Type{Vector{Float64}}, x::Missing) = Float64[]
-
-# Replace columns by nicer types
-promoter_list.genes = parse.(Vector{String}, promoter_list.genes)
-promoter_list.evidence = parse.(Vector{String}, promoter_list.evidence)
-promoter_list.gene_position = parse.(Vector{Float64}, promoter_list.gene_position)
-
-## Get  without tss
-
-df_tss_missing = promoter_list[isnan.(promoter_list.tss), :]
-# Remove some artifacts
-df_tss_missing = df_tss_missing[1:end-2, :]
-df_tss_missing = df_tss_missing[map(x -> length(x) != 0, df_tss_missing.genes), :]
-df_tss_missing
 ##
 # Import promoter data
 df_DB_prom = CSV.read(
@@ -81,35 +40,6 @@ df_DB_prom.PROMOTER_STRAND = [direction_dict[x] for x in df_DB_prom.PROMOTER_STR
 # Fix type
 df_DB_prom.PROMOTER_NAME = convert(Vector{String}, df_DB_prom.PROMOTER_NAME)
 df_DB_prom
-
-## Look for possible TSS in regulonDB database
-
-# Skip predicted promoters that have no genes annotated
-_df = df_joint[.~ ismissing.(df_joint.gene_position), :]
-
-# Find promoters without TSS
-_df = _df[isnan.(_df.tss), :]
-
-# Genes with promoters
-df_w_prom = _df[.~ ismissing.(_df.promoter), :]
-
-# Check if any of these promoters have a TSS in regulon DB
-__df = DataFrame()
-for i in 1:nrow(df_w_prom)
-    temp = df_DB[
-        (df_DB.PROMOTER_NAME .== df_w_prom[i, "promoter"]) .& 
-    (.~ ismissing.(df_DB.POS_1)), :]
-    append!(__df, temp)
-end
-__df
-# Seems like there are no additional TSS
-
-##
-# Genes without promoters
-df_wo_prom = _df[ismissing.(_df.promoter), :]
-
-##
-df_DB[ .~ ismissing.(df_DB.POS_1), :]
 
 ##
 df_DB_genes = CSV.read(

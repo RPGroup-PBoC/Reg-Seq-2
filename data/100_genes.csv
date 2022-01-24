@@ -1,0 +1,101 @@
+name	group	protein_function
+rspA	Gold Standard	mandelate racemase/muconate lactonizing enzyme family protein RspA
+araA	Gold Standard	L-arabinose isomerase
+araB	Gold Standard	ribulokinase
+znuB	Gold Standard	Zn2+ ABC transporter membrane subunit
+znuC	Gold Standard	Zn2+ ABC transporter ATP binding subunit
+xylA	Gold Standard	xylose isomerase
+xylF	Gold Standard	xylose ABC transporter periplasmic binding protein
+dicC	Gold Standard	Qin prophage; putative DNA-binding transcriptional regulator DicC
+relE	Gold Standard	Qin prophage; mRNA interferase toxin RelE
+relB	Gold Standard	Qin prophage; antitoxin/DNA-binding transcriptional repressor RelB
+ftsK	Gold Standard	cell division DNA translocase FtsK
+znuA	Gold Standard	Zn2+ ABC transporter periplasmic binding protein
+lacI	Gold Standard	DNA-binding transcriptional repressor LacI
+marR	Gold Standard	DNA-binding transcriptional repressor MarR
+dgoR	Gold Standard	DNA-binding transcriptional repressor DgoR
+ompR	Gold Standard	OmpR dimer
+dicA	Gold Standard	DNA-binding transcriptional dual regulator DicA
+araC	Gold Standard	DNA-binding transcriptional dual regulator AraC
+blr	Antibiotic res associated	Resistance to antibiotics that inhibit peptidoglycan synthesis 
+gyrA	Antibiotic res associated	involved in DNA replication
+lamB	Antibiotic/receptor protein	Facilitates diffusion of maltose across the outer membrane
+ghoT	Toxin	Part of type V toxin-antitoxin system
+yafN	Antitoxin	Antitoxin to yafo/YafN transcription is induced by chloramphenicol treatment
+ihfA	Inc-4 (x) - stress	DNA-binding transcriptional dual regulator (integration host factor subunit)
+ompR	Inc-4 (y) - stress	OmpR phosphorylated DNA-binding transcriptional dual regulator
+ompF	Inc-4 (z) - stress	outer membrane porin 
+emrA	Antibiotic res associated/regulation not clearly known	protein of a tripartite efflux pump
+emrB	Antibiotic res associated/regulation not clearly known	protein of a tripartiate efflux pump
+crp	Inc-1 (x)	DNA-binding transcriptional dual regulator (activator/repressor)
+galS	Inc-1 (y)	transcriptional repressor (galactose isorepressor)
+mglB	Inc-1 (z1)	periplasmic binding protein of D-galactose / methyl-D-galactoside ABC transport system
+galE	Inc-1 (z2)	UDP-glucose 4-epimerase
+dapA	lysine biosynthesis/ gold standard	lysine biosynthesis
+ompA	phage receptor protein	receptor for several phage
+hokB	Antibiotic/Toxin-Antitoxin	Persister cell formation
+obgE	GTP binding protein	chromosome segregation/ribosome assembly
+yagB	antitoxin	enhance the bundling of cytoskeleton proteins
+yjjJ	Toxin	toxic upon overexpression
+prlF	Antitoxin	Forms PrlF-YhaV antitoxin-toxin complex
+yhaV	Toxin/antixin;Do not have annotated promoter	Ribonuclease activity
+hdeA	Heinemann dataset	periplasmic acid stress chaperone
+aceA	Heinemann dataset	isocitrate lyase
+ecnB	Heinemann dataset (toxin/anti-toxin)	bacteriolytic entericidin B lipoprotein
+mcbA	Heinemann dataset	DUF1471 domain-containing protein McbA
+tnaA	Heinemann dataset	tryptophanase / L-cysteine desulfhydrase
+mglB	Heinemann dataset	D-galactose/methyl-galactoside ABC transporter periplasmic binding protein
+gatA	Heinemann dataset	galactitol-specific PTS enzyme IIB component
+lpp	Heinemann dataset	murein lipoprotein
+osmY	Heinemann dataset	periplasmic chaperone
+aldA	Heinemann dataset	aldehyde dehydrogenase A, NAD-linked
+osmC	Heinemann dataset	osmotically inducible peroxiredoxin
+gatY	Heinemann dataset	tagatose-1,6-bisphosphate aldolase 2
+asnA	Heinemann dataset	asparagine synthetase A
+osmB	Heinemann dataset	osmotically-inducible lipoprotein OsmB
+cusF	Heinemann dataset	copper/silver export system periplasmic binding protein
+idnO	Heinemann dataset	5-keto-D-gluconate 5-reductase
+ygaU	Heinemann dataset	K+ binding protein
+tmaR	Heinemann dataset	PTS system regulator TmaR
+yabP	uncharacterized protein	
+yabQ	uncharacterized protein	multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant
+yacC	uncharacterized protein	putative lipoprotein
+yacH	uncharacterized protein	may encode a membrane protein
+yadG	uncharacterized protein	putative ABC transporter ATP-binding protein
+yadI	uncharacterized protein	putative PTS enzyme IIA component
+yadE	uncharacterized protein	putative polysaccharide deacetylase lipoprotein
+yadM	uncharacterized protein	putative fimbrial protein
+yadN	uncharacterized protein	putative fimbrial protein
+yadS	uncharacterized protein	PF03458 family protein
+acrB	Antibiotic/efflux pump	Encodes inner membrane component of a tripartite, proton dependent, drug efflux pump.
+acrZ	Antibiotic/efflux pump	Encodes a small membrane protein associated with the AcrAB-TolC multidrug efflux pump 
+arcA	metabolism	DNA binding transcriptional regulator/represses wide variety of aerobic enzymes
+arcB	metabolism	mediates anaerobic repression of aerobic genes
+yaeR	uncharacterized protein	VOC domain-containing protein YaeR
+yaeQ	uncharacterized protein	
+yafT	uncharacterized protein	lipoprotein YafT
+ykfM	uncharacterized protein	
+yafZ	uncharacterized protein	CP4-6 prophage; DUF932 domain-containing protein YafZ
+yagK	uncharacterized protein	CP4-6 prophage; uncharacterized protein YagK
+yagJ	uncharacterized protein	CP4-6 prophage; protein YagJ
+yagL	uncharacterized protein	CP4-6 prophage; resolvase-like catalytic domain-containing protein YagL
+yagM	uncharacterized protein	CP4-6 prophage; protein YagM
+ykgJ	uncharacterized protein	putative metal-chelating domain-containing protein YkgJ
+ykgL	uncharacterized protein	
+ykgR	uncharacterized protein	
+ykgE	uncharacterized protein	putative lactate utilization oxidoreductase YkgE
+ykgH	uncharacterized protein	
+yahC	uncharacterized protein	
+yahL	uncharacterized protein	
+yahM	uncharacterized protein	
+yahN	uncharacterized protein	
+hokC	Toxin/ regulation unclear	Confers toxic function
+mokC	Toxin/ regulation unclear	Confers toxic function
+ldrD	Toxin	Acts as the toxin of a Type I toxin-antitoxin pair
+rdlD	Antitoxin/Antisense regulatory RNA	Regulates the LdrD toxin translation
+tabA	Toxin-Antitoxin/Biofilm	May decrease biofilm dispersal in response to several toxin-antitoxin systems
+ratA	Toxin, Regulation not known	Inhibits translation initiation
+dinQ	Toxin	Membrane toxin
+tisB	Antibiotics/Toxin-Antitoxin	Formation of persister cell
+ysdE	Unknown/associated with antibiotic resistance	Expression is higher during exponential phase than during stationary phase in rich media
+tolC	Antibiotics/Toxin-Antitoxin	Outer membrane channel of efflux system, pumps out toxins, antibiotics
