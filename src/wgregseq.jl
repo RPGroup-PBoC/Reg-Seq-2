@@ -15,5 +15,10 @@ module plotting_style
 include("plotting_style.jl")
 end
 
+module utils
+include("utils.jl")
+export parse
+end
+
 
 end # module

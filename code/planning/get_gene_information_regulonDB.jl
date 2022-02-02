@@ -6,12 +6,12 @@ using CSV, DataFrames, wgregseq, CairoMakie
 dir = @__DIR__
 home_dir = joinpath(split(dir, '/')[1:end-2]...)
 # Import gene list to generate sequences for
-gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrame)
+gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrames.DataFrame)
 ##
 # Import promoter data
 df_DB_prom = CSV.read(
     "/$home_dir/data/regulonDB/promoter.txt", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     comment="#", 
     header=[
         "PROMOTER_ID",
@@ -44,7 +44,7 @@ df_DB_prom
 ##
 df_DB_genes = CSV.read(
     "/$home_dir/data/regulonDB/gene.txt", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     comment="#",
     header=[
         "GENE_ID",
@@ -83,7 +83,7 @@ insertcols!(df_DB_genes, 13, :gene_position => gene_pos)
 
 df_DB_TU = CSV.read(
     "/$home_dir/data/regulonDB/transcription_unit.txt", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     comment="#",
     header=[
         "TRANSCRIPTION_UNIT_ID",
@@ -111,7 +111,7 @@ df_DB_TU
 
 df_DB_link = CSV.read(
     "/$home_dir/data/regulonDB/tu_gene_link.txt", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     comment="#",
     header=[
         "TRANSCRIPTION_UNIT_ID",
@@ -121,7 +121,7 @@ df_DB_link = CSV.read(
 )
 df_DB_link
 ##
-df_DB_tss = DataFrame()
+df_DB_tss = DataFrames.DataFrame()
 for i in 1:nrow(df_DB_TU)
     # Get TU ID and promoter ID
     TU_ID, promoter_ID= df_DB_TU[i, ["TRANSCRIPTION_UNIT_ID", "PROMOTER_ID"]]

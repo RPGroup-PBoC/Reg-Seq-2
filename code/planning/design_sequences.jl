@@ -8,13 +8,38 @@ home_dir = joinpath(split(dir, "/")[1:end-2])
 re = open(FASTA.Reader, "/$home_dir/data/ecocyc/mg1655_genome.fasta")
 wt_sequence = [sequence(record) for record in re][1]
 
-# Import gene list to generate sequences for
-gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrame)
 
+##
+# Import gene list to generate sequences for
+gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrames.DataFrame, comment="#")
+
+# Give IDs to groups for adding primers later
+group_dict = Dict(filter(x -> occursin("Antibiotic/toxin", x), gene_table.group) .=> 1)
+group_dict["Gold Standard"] = 2
+group_dict["Heinemann dataset"] = 3
+group_dict["uncharacterized protein"] = 4
+group_dict["YmfT_modulon"] = 5
+group_dict["YgeV_modulon"] = 6
+groups = zeros(nrow(gene_table))
+for i in 1:nrow(gene_table)
+    if gene_table[i, "group"] in keys(group_dict)
+        groups[i] = group_dict[gene_table[i, "group"]]
+    else
+        groups[i] = 7
+    end
+end
+
+# Add IDs to table
+insertcols!(gene_table, 4, :group_ID => groups)
+
+# Print number of genes per group
+println(combine(groupby(gene_table, "group"), nrow))
+
+## Import promoters
 # Import promoter list and infer types that can be infered automatically
 promoter_list = CSV.read(
     "/$home_dir/data/promoter_list_processed.csv", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     types=Dict(
         "promoter"=>String,
         "tss"=>Float64,
@@ -24,29 +49,13 @@ promoter_list = CSV.read(
 
 operons_without_promoters = CSV.read(
     "/$home_dir/data/operons_without_promoters.csv", 
-    DataFrame, 
+    DataFrames.DataFrame, 
     types=Dict(
         "direction"=>String
     )
 )
 
-# Define custom function for nice imports
-Base.parse(::Type{Vector{String}}, x::String) = Vector{String}(filter(x-> x != ", ", split(x, "\""))[2:end-1])
-function Base.parse(::Type{Vector{Float64}}, x::String)
-    number = split(split(x, "[")[end][1:end-1], ", ")
-    number_list = Float64[]
-    for num in number
-        if num != ""
-            push!(number_list, parse(Float64, num))
-        else
-            return push!(number_list, NaN)
-        end
-    end
-    return number_list
 
-end
-Base.parse(::Type{Vector{String}}, x::Missing) = String[]
-Base.parse(::Type{Vector{Float64}}, x::Missing) = Float64[]
 
 # Replace columns by nicer types
 promoter_list.genes = parse.(Vector{String}, promoter_list.genes)
@@ -78,7 +87,7 @@ for i in 1:nrow(gene_table)
         gene_table[i, "name"] = syn
     end
 end
-
+gene_group_ID_dict = Dict(gene_table.name .=> gene_table.group_ID)
 println("Data imported.")
 println()
 ## Get promoters for genes
@@ -237,7 +246,9 @@ end
 gdf = groupby(deepcopy(df_sequences), :genes)
 df_stack = DataFrame()
 
-enzymes = ["SalI", "SbfI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI"]
+
+enzymes = ["SalI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI"]
+
 
 for group in gdf
     group[:, "sequence"] = wgregseq.design.add_primer(convert(Vector{BioSequences.LongDNASeq}, (group.sequence)), 100, "both")
@@ -250,18 +261,18 @@ for group in gdf
 end
 df_stack
 
-dict = Dict{Any, Any}(enzymes .=> sum.(eachcol(df_stack[!, enzymes])))
-dict["gene"] = [String31["all"]]
-dict["promoter"] = "all"
-append!(df_stack, DataFrame(dict))
+dict_enz = Dict{Any, Any}(enzymes .=> sum.(eachcol(df_stack[!, enzymes])))
+dict_enz["gene"] = [String31["all"]]
+dict_enz["promoter"] = "all"
+append!(df_stack, DataFrame(dict_enz))
 println("")
 println(df_stack)
 
-
+# Set these enzymes to disable query
 enz1 = ""
 enz2 = ""
 
-println("Upstream restriction enzyme (default is SalI):")
+println("Upstream restriction enzyme (default is SalI by hitting `enter`):")
 while enz1 ∉ wgregseq.enzyme_list.enzyme
     global enz1 = readline()
     if enz1 == ""
@@ -271,7 +282,7 @@ while enz1 ∉ wgregseq.enzyme_list.enzyme
         println("$enz1 not in list of enzymes")
     end
 end
-println("Downstream restriction enzyme (default is SacI):")
+println("Downstream restriction enzyme (default is SacI by hitting `enter`):")
 while enz2 ∉ wgregseq.enzyme_list.enzyme
     global enz2 = readline()
     if enz2 == ""
@@ -295,6 +306,8 @@ end
 # we try to take the next primer
 
 primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100, "both")
+insertcols!(df_sequences, 4, :fwd_primer => fill(primer, nrow(df_sequences)))
+insertcols!(df_sequences, 5, :rev_primer1 => fill(primer, nrow(df_sequences)))
 df_sequences.sequence = wgregseq.design.add_primer(df_sequences.sequence, primer)
 
 # Confirm that the primers are correct
@@ -315,6 +328,7 @@ insertcols!(cop_df, 5, :rev_primer3 => fill(0, nrow(cop_df)))
 
 gdf = groupby(cop_df, :genes)
 
+# Go through groups of n_per_group genes and add primer
 i = 1
 while i * n_per_group < length(gdf)
     global primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100 + i, "rev") 
@@ -330,10 +344,11 @@ for _df in gdf[(i - 1)*n_per_group+1:end]
     _df[:, "rev_primer2"] =  fill(primer, nrow(_df))
 end
 
-
+# Combine sequences to single table
 df_final = combine(gdf, :)
 df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 
+# Confirm sequence length
 if any(length.(df_final.sequence) .!= 231)
     throw(ErrorException("Not all sequences are 231bp!"))
 else
@@ -341,27 +356,36 @@ else
     println()
 end
 
+# Group sequences again
 gdf = groupby(df_final, :genes)
 
-n_per_group = 20
-i = 1
-while i * n_per_group < length(gdf)
-    global primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 200 + i, "rev")
-    for _df in gdf[1+(i-1)*n_per_group:i*n_per_group]
-        _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-        _df[:, "rev_primer3"] =  fill(primer, nrow(_df))
+# Add reverse primer for each group ID that was determined in the beginning
+for _df in gdf
+    genes = _df[1, "genes"]
+    gene_ids = []
+    for gene in genes
+        if gene in keys(gene_group_ID_dict)
+            group = gene_group_ID_dict[gene]
+            push!(gene_ids, group)
+        end
     end
-    global i += 1
-end
-primer = wgregseq.design.check_primers_re_sites(enz1, enz2, primer+1, "rev")
-for _df in gdf[(i - 1)*n_per_group+1:end]
+    gene_ids = gene_ids |> unique
+
+    if length(gene_ids) > 1
+        throw(ErrorException("More than one group for genes: $genes."))
+    else
+        ID = gene_ids[1]
+    end
+    local primer = wgregseq.design.check_primers_re_sites(enz1, enz2, Int(200 + ID), "rev")
     _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
     _df[:, "rev_primer3"] =  fill(primer, nrow(_df))
 end
 
+# Combine groups to single table
 df_final = combine(gdf, :)
 df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 
+# Confirm Length
 if any(length.(df_final.sequence) .!= 250)
     throw(ErrorException("Not all sequences are 250bp!"))
 else
@@ -370,6 +394,18 @@ else
 end
 
 ##
+# Save results
 filename = string(Dates.today()) * "_sequence_list.csv"
+filename_twist = string(Dates.today()) * "_sequence_list_twist.csv"
 CSV.write("/$home_dir/data/$filename", df_final)
+CSV.write("/$home_dir/data/$filename_twist", df_final[!, "sequence"])
 println("Sequence list saved in `/$home_dir/data/$filename`")
+println("Total number of sequences: $(nrow(df_final))")
+
+##
+println()
+println("Sequences per group.")
+println(combine(groupby(df_final, :rev_primer3), nrow))
+
+
+##

@@ -102,7 +102,7 @@ for x in gene_list
         push!(position_list, NaN)
     end
 end
-df_genes = DataFrame(
+df_genes = DataFrames.DataFrame(
     ID=ID_list, 
     gene=name_list, 
     direction=direction_list, 
@@ -153,7 +153,7 @@ for x in tu_list
     end
 end
 
-df_tu = DataFrame(TU_ID=ID_list, promoter_ID=promoter_list)
+df_tu = DataFrames.DataFrame(TU_ID=ID_list, promoter_ID=promoter_list)
 
 tu_genes = Vector{String}[]
 tu_gene_positions = Vector{Float64}[]
@@ -239,7 +239,7 @@ for x in promoter_list
     end
     
 end
-df_tss = DataFrame(promoter_ID=ID_list, promoter=name_list, tss=TSS_list, evidence=evidence_list)
+df_tss = DataFrames.DataFrame(promoter_ID=ID_list, promoter=name_list, tss=TSS_list, evidence=evidence_list)
 
 df_tss
 "rspAp" in name_list
@@ -265,7 +265,7 @@ CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promote
 genes_w_promoters = unique(vcat(df_joint_prom.genes...))
 genes_wo_promoters = filter(x -> x ∉ genes_w_promoters, df_genes.gene)
 
-df_no_prom = DataFrame()
+df_no_prom = DataFrames.DataFrame()
 for gene in genes_wo_promoters
     append!(df_no_prom, df_tu[map(x -> gene in x, df_tu.genes), :])
 end
