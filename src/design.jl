@@ -148,10 +148,11 @@ Returns
     Sequence including mutation
 """
 function mutate_from_index(sequence, index; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T])
+    mut_seq = deepcopy(sequence)
     for (locus, mutation) in index
-        sequence[locus] = filter(x-> x != sequence[locus], alphabet)[mutation]
+        mut_seq[locus] = filter(x-> x != mut_seq[locus], alphabet)[mutation]
     end
-    return sequence
+    return mut_seq
 end
 
 
@@ -193,15 +194,6 @@ function mutations_rand(
     site_end=length(sequence)
 )
         
-    
-    # Get site to mutate
-    #=
-    if site_end == :end
-        mutation_window = sequence[site_start:end]
-    else
-        mutation_window = @eval sequence[site_start:$site_end]
-    end
-=#
     mutation_window = sequence[site_start:site_end]
     
     # Create list
@@ -211,7 +203,7 @@ function mutations_rand(
     mutant_indices = random_mutation_generator(mutation_window, rate, num_mutants)
     
     for x in mutant_indices
-       push!(mutants, sequence[1:site_start-1] * mutate_from_index(mutation_window, x) * sequence[site_end+1:end])
+        push!(mutants, sequence[1:site_start-1] * mutate_from_index(mutation_window, x) * sequence[site_end+1:end])
     end
     return mutants
 end

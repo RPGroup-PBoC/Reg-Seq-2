@@ -15,6 +15,10 @@ module plotting_style
 include("plotting_style.jl")
 end
 
+module quality_control
+include("qc.jl")
+end
+
 module utils
 include("utils.jl")
 export parse

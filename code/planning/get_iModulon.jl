@@ -23,7 +23,7 @@ df_samples_MG = df_samples[
 sample_IDs = df_samples_MG.Column1
 df_samples[!, "Strain Description"] |> unique
 df_samples_MG[!, ["Carbon Source (g/L)"]] |> unique |> println
-df_samples_MG[!, ["Nitrogen Source (g/L)"]] |> unique |> println
+df_samples_MG[!, ["Nitrogen Source (g/L)"]] |> unique  |> println
 df_samples_MG[!, ["Electron Acceptor"]] |> unique |> println
 df_samples_MG[!, ["Trace Element Mixture"]] |> unique |> println
 ## iModulon metadata
@@ -41,6 +41,9 @@ df_gene_im_list = CSV.read("/$home_dir/data/iModulon/gene_presence_list.csv", Da
 df_gene_im_list.Gene |> unique |> length
 ## Gene - iModulon boolean table
 df_gene_im_table = CSV.read("/$home_dir/data/iModulon/gene_presence_matrix.csv", DataFrame)
+
+## Raw Counts
+df_counts = CSV.read("/$home_dir/data/iModulon/Precise2dot0counts.csv", DataFrame)
 
 ## Normalized reads 
 df_tpm = CSV.read("/$home_dir/data/iModulon/log_tpm.csv", DataFrame)

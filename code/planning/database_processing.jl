@@ -16,7 +16,7 @@ promoter_list_ecocyc = CSV.read(
         "direction"=>String
     )
 )
-
+promoter_list_ecocyc
 # Promoters from RegulonDB
 promoter_list_regulonDB = CSV.read(
     "/$home_dir/data/promoter_list_regulon_DB.csv", 
@@ -31,8 +31,8 @@ promoter_list_regulonDB = CSV.read(
 
 # Replace columns by nicer types
 promoter_list_ecocyc.genes = parse.(Vector{String}, promoter_list_ecocyc.genes)
+promoter_list_ecocyc.evidence = parse.(Vector{String}, promoter_list_ecocyc.evidence)
 promoter_list_ecocyc.gene_position = parse.(Vector{Float64}, promoter_list_ecocyc.gene_position)
-
 promoter_list_regulonDB.genes = parse.(Vector{String}, promoter_list_regulonDB.genes)
 promoter_list_regulonDB.gene_position = parse.(Vector{Float64}, promoter_list_regulonDB.gene_position)
 
@@ -40,7 +40,7 @@ promoter_list_regulonDB.gene_position = parse.(Vector{Float64}, promoter_list_re
 # Join the datasets
 df = promoter_list_ecocyc[(.~ isnan.(promoter_list_ecocyc.tss)) .& (map(x-> x != ["None"], promoter_list_ecocyc.genes)), :]
 promoter_list_regulonDB.tss = coalesce.(promoter_list_regulonDB.tss, NaN)
-append!(df, promoter_list_regulonDB)
+#append!(df, promoter_list_regulonDB)
 
 ##
 

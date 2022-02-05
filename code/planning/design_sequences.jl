@@ -10,6 +10,7 @@ wt_sequence = [sequence(record) for record in re][1]
 
 
 ##
+println("Importing Data...")
 # Import gene list to generate sequences for
 gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrames.DataFrame, comment="#")
 
@@ -60,6 +61,7 @@ operons_without_promoters = CSV.read(
 # Replace columns by nicer types
 promoter_list.genes = parse.(Vector{String}, promoter_list.genes)
 promoter_list.gene_position = parse.(Vector{Float64}, promoter_list.gene_position)
+promoter_list.evidence = parse.(Vector{String}, promoter_list.evidence)
 
 operons_without_promoters.genes = parse.(Vector{String}, operons_without_promoters.genes)
 operons_without_promoters.gene_position = parse.(Vector{Float64}, operons_without_promoters.gene_position)
@@ -88,13 +90,14 @@ for i in 1:nrow(gene_table)
     end
 end
 gene_group_ID_dict = Dict(gene_table.name .=> gene_table.group_ID)
-println("Data imported.")
+println("Done!")
 println()
 ## Get promoters for genes
+println("Finding Promoters...")
 df_list = DataFrame[]
 genes_no_tss = []
 for gene in gene_table.name
-    _df = promoter_list[map(x -> gene in x, promoter_list.genes), [:tss, :direction, :gene_position, :genes, :promoter]]
+    _df = promoter_list[map(x -> gene in x, promoter_list.genes), [:tss, :direction, :gene_position, :genes, :promoter, :evidence]]
     if nrow(_df) > 0
         push!(df_list, _df)
     else
@@ -102,32 +105,12 @@ for gene in gene_table.name
     end
 end
 df = vcat(df_list...) |> unique
-println("Promoters found for genes.")
+println("Done!")
 println()
 
-## For genes with multiple promoters, take the strongest predicted one
 
-# Create temporary DataFrame
-temp_df = DataFrame()
-
-# Go through each gene
-for gene_list in df.genes |> unique
-    # Find promoters for gene
-    sub_df = df[map(x -> x == gene_list, df.genes), :]
-    # If more than one promoter, find strongest
-    if nrow(sub_df) > 1
-        append!(temp_df, DataFrame(wgregseq.design.find_best_promoter(sub_df, wt_sequence)))
-    else
-        append!(temp_df, sub_df)
-    end
-end
-
-df = temp_df
-
-println("Best promoter found for genes with multiple promoters.")
-println()
 ## Missing TSS
-
+println("Looking for TSS in Urtecho data set...")
 # Group genes into operons / transcription units
 df_no_prom = DataFrame()
 for gene in genes_no_tss
@@ -170,6 +153,7 @@ for i in 1:nrow(df_no_prom)
             if nrow(temp) != 0
                 insertcols!(temp, 2, :genes => fill(genes, nrow(temp)))
                 insertcols!(temp, 2, :gene_position => fill(gene_position, nrow(temp)))
+                insertcols!(temp, 2, :evidence => fill(["EXP"], nrow(temp)))
                 rename!(temp, "tss_strand" => "direction", "tss_position"=> "tss", "tss_name"=>"promoter")
                 append!(df_tss_urtecho, temp)
                 push!(delete_index_list, i)
@@ -179,16 +163,17 @@ for i in 1:nrow(df_no_prom)
 end
 
 # Add found promoters to list
-append!(df, df_tss_urtecho[:, ["genes", "tss", "direction", "gene_position", "promoter"]])
+append!(df, df_tss_urtecho[:, ["genes", "tss", "direction", "gene_position", "promoter", "evidence"]])
 
 # Remove genes with identified promoters from list of genes without promoters
 df_no_prom = df_no_prom[Not(delete_index_list), :]
-println("Took TSS from Urtecho data set.")
+println("Done!")
 println()
 
 ## Now we tackle the genes for which we have not found a TSS yet
 # We look for the site with the strongest predicted promoter within
 # 500 bases upstream of the start of the coding region
+println("Predicting TSS using La Fleur model...")
 p = wgregseq.promoter_finder.Promoter_Calculator()
 tss_list = Int64[]
 name_list = String[]
@@ -216,13 +201,49 @@ end
 insertcols!(df_no_prom, 2, :tss =>tss_list)
 # Add information that they are predicted
 insertcols!(df_no_prom, 5, :promoter =>name_list)
+insertcols!(df_no_prom, 5, :evidence =>fill(["COMP"], nrow(df_no_prom)))
 # Add promoters to list
 append!(df, df_no_prom)
 
-println("Predicted TSS using La Fleur model.")
+println("Done!")
 println()
 
+## For genes with multiple promoters, take the strongest predicted one
+df
+# Create temporary DataFrame
+temp_df = DataFrame()
+#=
+# Go through each gene
+println("Finding best promoter for genes with multiple promoters...")
+for gene_list in df.genes |> unique
+    # Find promoters for gene
+    sub_df = df[map(x -> x == gene_list, df.genes), :]
+    println(sub_df)
+    # If more than one promoter, find strongest
+    if nrow(sub_df) > 1
+        inds = map(x -> "EXP" in x, sub_df.evidence)
+        if sum(inds) == 0
+            append!(temp_df, DataFrame(wgregseq.design.find_best_promoter(sub_df, wt_sequence)))
+        elseif sum(inds) == 1
+            append!(temp_df, sub_df[inds, :])
+        else
+            _df = sub_df[inds, :]
+            dist_mat = _df.tss' .- _df.tss
+            println(dist_mat)
+            break
+        end
+    else
+        append!(temp_df, sub_df)
+    end
+end
+
+#df = temp_df
+
+println("Done!")
+println()
+=#
 ## Design Sequences for genes with TSS
+println("Creating mutated sequences...")
 df_sequences = DataFrame()
 for row in eachrow(df)
     tss = Int64(row.tss)
@@ -238,7 +259,7 @@ end
 if any(length.(df_sequences.sequence) .!= 160)
     throw(ErrorException("Not all sequences are 160bp!"))
 else
-    println("Mutated sequences created!")
+    println("Done!")
     println()
 end
 
@@ -247,7 +268,13 @@ gdf = groupby(deepcopy(df_sequences), :genes)
 df_stack = DataFrame()
 
 
-enzymes = ["SalI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI"]
+enzymes = ["SalI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI", "PstI", "NsiI"]
+println("Adding restriction enzymes...")
+for enz in enzymes
+    if enz ∉ wgregseq.enzyme_list.enzyme
+        throw(ErrorException("$enz is not in list of enzymes."))
+    end
+end
 
 
 for group in gdf
@@ -269,8 +296,8 @@ println("")
 println(df_stack)
 
 # Set these enzymes to disable query
-enz1 = ""
-enz2 = ""
+enz1 = "SpeI"
+enz2 = "SalI"
 
 println("Upstream restriction enzyme (default is SalI by hitting `enter`):")
 while enz1 ∉ wgregseq.enzyme_list.enzyme
@@ -300,14 +327,20 @@ if any(length.(df_sequences.sequence) .!= 172)
     throw(ErrorException("Not all sequences are 172 after adding primers bp!"))
 end
 
+insertcols!(df_sequences, 4, :upstream_re_site => fill(enz1, nrow(df_sequences)))
+insertcols!(df_sequences, 5, :downstream_re_site => fill(enz2, nrow(df_sequences)))
+
+println("Done!")
+println()
 
 ## Adding primers
 # First we check that the primer does not contain the restriction site. If that happens
 # we try to take the next primer
+println("Adding forward and reverse primers...")
 
 primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100, "both")
-insertcols!(df_sequences, 4, :fwd_primer => fill(primer, nrow(df_sequences)))
-insertcols!(df_sequences, 5, :rev_primer1 => fill(primer, nrow(df_sequences)))
+insertcols!(df_sequences, 4, :fwd_primer => fill((primer, (1, 20)), nrow(df_sequences)))
+insertcols!(df_sequences, 5, :rev_primer1 => fill((primer, (193, 212)), nrow(df_sequences)))
 df_sequences.sequence = wgregseq.design.add_primer(df_sequences.sequence, primer)
 
 # Confirm that the primers are correct
@@ -316,15 +349,16 @@ rev_primer = wgregseq.design.import_primer(primer, "rev")
 if any([seq[1:20] != fwd_primer for seq in df_sequences.sequence])
     throw(ErrorException("Not all sequences have the right forward primer!"))
 elseif any([seq[end-19:end] != rev_primer for seq in df_sequences.sequence])
-    println("Forward primer and first reverse primer added.")
+    println("Done!")
     println()
 end
 
 ## Add reverse primers
+println("Adding primers for groups of 5 genes...")
 n_per_group = 5
 cop_df = deepcopy(df_sequences)
-insertcols!(cop_df, 4, :rev_primer2 => fill(0, nrow(cop_df)))
-insertcols!(cop_df, 5, :rev_primer3 => fill(0, nrow(cop_df)))
+insertcols!(cop_df, 4, :rev_primer2 => fill((0, (213, 231)), nrow(cop_df)))
+insertcols!(cop_df, 5, :rev_primer3 => fill((0, (232, 250)), nrow(cop_df)))
 
 gdf = groupby(cop_df, :genes)
 
@@ -334,14 +368,14 @@ while i * n_per_group < length(gdf)
     global primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100 + i, "rev") 
     for _df in gdf[1+(i-1)*n_per_group:i*n_per_group]
         _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-        _df[:, "rev_primer2"] =  fill(primer, nrow(_df))
+        _df[:, "rev_primer2"] =  fill((primer, (213, 231)), nrow(_df))
     end
     global i += 1
 end
 primer = wgregseq.design.check_primers_re_sites(enz1, enz2, primer+1, "rev")
 for _df in gdf[(i - 1)*n_per_group+1:end]
     _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-    _df[:, "rev_primer2"] =  fill(primer, nrow(_df))
+    _df[:, "rev_primer2"] =  fill((primer, (213, 231)), nrow(_df))
 end
 
 # Combine sequences to single table
@@ -352,11 +386,12 @@ df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 if any(length.(df_final.sequence) .!= 231)
     throw(ErrorException("Not all sequences are 231bp!"))
 else
-    println("Second reverse primer added and last base pair trimmed.")
+    println("Done!")
     println()
 end
 
 # Group sequences again
+println("Adding group specific primers...")
 gdf = groupby(df_final, :genes)
 
 # Add reverse primer for each group ID that was determined in the beginning
@@ -378,7 +413,7 @@ for _df in gdf
     end
     local primer = wgregseq.design.check_primers_re_sites(enz1, enz2, Int(200 + ID), "rev")
     _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-    _df[:, "rev_primer3"] =  fill(primer, nrow(_df))
+    _df[:, "rev_primer3"] =  fill((primer, (232, 250)), nrow(_df))
 end
 
 # Combine groups to single table
@@ -389,7 +424,7 @@ df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 if any(length.(df_final.sequence) .!= 250)
     throw(ErrorException("Not all sequences are 250bp!"))
 else
-    println("Third reverse primer added and last base pair trimmed.")
+    println("Done!")
     println()
 end
 
@@ -407,5 +442,4 @@ println()
 println("Sequences per group.")
 println(combine(groupby(df_final, :rev_primer3), nrow))
 
-
-##
+df_final

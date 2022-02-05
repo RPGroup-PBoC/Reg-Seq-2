@@ -157,4 +157,4 @@ filter(x -> "dicA" in x, df_DB_tss.genes)
 _d = dropmissing(df_DB_TU, "TRANSCRIPTION_UNIT_NAME")
 _d[_d.TRANSCRIPTION_UNIT_NAME .== "dicA", :]
 
-df_DB_TU
+df_DB_tss

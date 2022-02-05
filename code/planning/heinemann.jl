@@ -1,4 +1,5 @@
 using CSV, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq, Pandas
+wgregseq.plotting_style.default_makie!()
 
 # Import data. Change path if necessary
 Pandas.to_csv(Pandas.read_excel("data/heinemann_data.xlsx", sheet_name="Table S6", header=[2]), "data/heinemann_data_cleaned.csv")

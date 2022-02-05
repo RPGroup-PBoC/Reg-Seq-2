@@ -196,7 +196,7 @@ promoter_list = [promoter[.~isempty.(promoter)] for promoter in promoter_list]
 ID_list = String[]
 name_list = String[]
 TSS_list = Float64[]
-evidence_list = []
+evidence_list = Vector{String}[]
 
 for x in promoter_list
     name = filter(x -> x[1] == "UNIQUE-ID", x)
@@ -222,7 +222,7 @@ for x in promoter_list
     
     cits = filter(x -> x[1] == "CITATIONS", x)
     if ~isempty(cits)
-        cit_list = []
+        cit_list = String[]
         for cit in cits
             if occursin("EV-EXP", cit[2])
                 push!(cit_list, "EXP")
@@ -235,7 +235,7 @@ for x in promoter_list
         end
         push!(evidence_list, cit_list)
     else
-        push!(evidence_list, ["none"])
+        push!(evidence_list, String["none"])
     end
     
 end
@@ -260,7 +260,7 @@ df_joint
 
 # Split DataFrame into promoters with TUs and without
 df_joint_prom = df_joint[(df_joint.direction .!= "0") .& (.~ isnan.(df_joint.tss)), :]
-CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promoter", "genes", "gene_position", "direction", "tss"]])
+CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promoter", "genes", "gene_position", "direction", "tss", "evidence"]])
 ##
 genes_w_promoters = unique(vcat(df_joint_prom.genes...))
 genes_wo_promoters = filter(x -> x ∉ genes_w_promoters, df_genes.gene)
