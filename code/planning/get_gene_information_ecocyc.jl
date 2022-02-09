@@ -257,6 +257,14 @@ println("First 20 rows of list:")
 println(first(df_joint, 20))
 df_joint
 ##
+gdf = groupby(df_joint, "promoter_ID")
+temp_df = DataFrame()
+for _df in gdf
+    ind = argmax(maximum(length.(_df.genes)))
+    append!(temp_df, _df[ind:ind, :])
+end
+df_joint = temp_df
+
 
 # Split DataFrame into promoters with TUs and without
 df_joint_prom = df_joint[(df_joint.direction .!= "0") .& (.~ isnan.(df_joint.tss)), :]

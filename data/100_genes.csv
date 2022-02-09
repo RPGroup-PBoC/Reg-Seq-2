@@ -31,10 +31,10 @@ crp	Inc-1 (x)	DNA-binding transcriptional dual regulator (activator/repressor)
 galS	Inc-1 (y)	transcriptional repressor (galactose isorepressor)
 mglB	Inc-1 (z1)	periplasmic binding protein of D-galactose / methyl-D-galactoside ABC transport system
 galE	Inc-1 (z2)	UDP-glucose 4-epimerase
-dapA	lysine biosynthesis/ gold standard	lysine biosynthesis
-ompA	phage receptor protein	receptor for several phage
+#dapA	lysine biosynthesis/ gold standard	lysine biosynthesis
+#ompA	phage receptor protein	receptor for several phage
 #hokB	Antibiotic/toxin	Persister cell formation
-obgE	GTP binding protein	chromosome segregation/ribosome assembly
+#obgE	GTP binding protein	chromosome segregation/ribosome assembly
 yagB	Antibiotic/toxin	enhance the bundling of cytoskeleton proteins
 yjjJ	Antibiotic/toxin	toxic upon overexpression
 prlF	Antibiotic/toxin	Forms PrlF-YhaV antitoxin-toxin complex
@@ -47,15 +47,15 @@ tnaA	Heinemann dataset	tryptophanase / L-cysteine desulfhydrase
 mglB	Heinemann dataset	D-galactose/methyl-galactoside ABC transporter periplasmic binding protein
 gatA	Heinemann dataset	galactitol-specific PTS enzyme IIB component
 lpp	Heinemann dataset	murein lipoprotein
-osmY	Heinemann dataset	periplasmic chaperone
-aldA	Heinemann dataset	aldehyde dehydrogenase A, NAD-linked
-osmC	Heinemann dataset	osmotically inducible peroxiredoxin
-gatY	Heinemann dataset	tagatose-1,6-bisphosphate aldolase 2
-asnA	Heinemann dataset	asparagine synthetase A
-osmB	Heinemann dataset	osmotically-inducible lipoprotein OsmB
-cusF	Heinemann dataset	copper/silver export system periplasmic binding protein
-idnO	Heinemann dataset	5-keto-D-gluconate 5-reductase
-ygaU	Heinemann dataset	K+ binding protein
+#osmY	Heinemann dataset	periplasmic chaperone
+#aldA	Heinemann dataset	aldehyde dehydrogenase A, NAD-linked
+#osmC	Heinemann dataset	osmotically inducible peroxiredoxin
+#gatY	Heinemann dataset	tagatose-1,6-bisphosphate aldolase 2
+#asnA	Heinemann dataset	asparagine synthetase A
+#osmB	Heinemann dataset	osmotically-inducible lipoprotein OsmB
+#cusF	Heinemann dataset	copper/silver export system periplasmic binding protein
+#idnO	Heinemann dataset	5-keto-D-gluconate 5-reductase
+#ygaU	Heinemann dataset	K+ binding protein
 tmaR	Heinemann dataset	PTS system regulator TmaR
 yabP	uncharacterized protein	
 yabQ	uncharacterized protein	multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant

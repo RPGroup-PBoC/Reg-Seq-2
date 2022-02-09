@@ -3,35 +3,54 @@ using BioSequences, DataFrames, CairoMakie
 import ..enzyme_list
 using ..wgregseq: design.import_primer
 
-
+dir = @__DIR__
+home_dir = joinpath(split(dir, "/")[1:end-1])
 
 function check_dataframe(df; print_results=true, site_start=1, site_end=nothing)
     gdf = groupby(df, :promoter)
     max_list, min_list = Float64[], Float64[]
+    output=""
     for _df in gdf
         promoter = _df.promoter |> unique
+        
         if print_results
             println("Promoter: $promoter")
             println("-------------------------")
+        else
+            output *= "Promoter: $promoter\n"
+            output *= "-------------------------\n"
         end
+
         mut_rate = mutation_coverage(_df, site_start, site_end)
         min_rate, max_rate = minimum(mut_rate), maximum(mut_rate)
         if print_results
             println("Minimum mutation rate: $(min_rate)")
             println("Maximum mutation rate: $(max_rate)")
             println()
-            push!(min_list, min_rate)
-            push!(max_list, max_rate)
+            
+        else
+            output *= "Minimum mutation rate: $(min_rate)\n"
+            output *= "Maximum mutation rate: $(max_rate)\n"
+            output *= "\n"
+
         end
+        push!(min_list, min_rate)
+        push!(max_list, max_rate)
         if check_cut_sites(_df)
             if print_results
                 println("Cut sites are correct.")
                 println()
+            else
+                output *= "Cut sites are correct.\n"
+                output *= "\n" 
             end
         else
             if print_results
                 println("Cut sites NOT are correct.")
                 println()
+            else
+                output *= "Cut sites NOT are correct.\n"
+                output *= "\n" 
             end
 
         end
@@ -40,11 +59,17 @@ function check_dataframe(df; print_results=true, site_start=1, site_end=nothing)
             if print_results
                 println("Primers are correct.")
                 println()
+            else
+                output *= "Primers are correct.\n"
+                output *= "\n" 
             end
         else
             if print_results
                 println("Primes NOT are correct.")
                 println()
+            else
+                output *= "Primes NOT are correct.\n"
+                output *= "\n" 
             end
 
         end
@@ -52,8 +77,18 @@ function check_dataframe(df; print_results=true, site_start=1, site_end=nothing)
         if print_results
             println()
             println()
+        else
+            output *= "\n"
+            output *= "\n"
         end
     end
+
+    if ~print_results
+        open("/$home_dir/qc_output.txt", "w") do file
+            write(file, output)
+        end
+    end
+
     promoter = df.promoter |> unique
     fig = Figure(resolution=(15*length(promoter), 800))
     ax = Axis(fig[1, 1])
@@ -66,7 +101,7 @@ function check_dataframe(df; print_results=true, site_start=1, site_end=nothing)
     ax.xticks = 1:length(promoter)
     ax.xtickformat = x -> string.(promoter)
     axislegend()
-    save("plot.pdf", fig)
+    save("/$home_dir/figures/min_max_mutation_rates.pdf", fig)
     return fig
 end
 

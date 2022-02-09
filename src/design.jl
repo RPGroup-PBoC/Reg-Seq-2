@@ -32,12 +32,14 @@ function import_primer(index::Int, direction::String)
     dir = @__DIR__
     path = joinpath(split(dir, '/')[1:end-1])
     if direction == "fwd"
-        r = open(FASTA.Reader, "/$path/data/forward_finalprimers.fasta")
-        record = collect(r)[index]
+        record = open(FASTA.Reader, "/$path/data/forward_finalprimers.fasta") do r
+            collect(r)[index]
+        end
         return sequence(record)
     elseif direction == "rev"
-        r = open(FASTA.Reader, "/$path/data/reverse_finalprimers.fasta")
-        record = collect(r)[index]
+        record = open(FASTA.Reader, "/$path/data/reverse_finalprimers.fasta") do r
+            collect(r)[index]
+        end
         return sequence(record) |> reverse_complement
     else
         throw(ArgumentError("dir has to be either \"fwd\" or \"rev\""))

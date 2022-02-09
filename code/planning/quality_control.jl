@@ -7,10 +7,10 @@ dir = @__DIR__
 home_dir = joinpath(split(dir, "/")[1:end-2])
 
 ##
-filename = "2022-02-04_sequence_list.csv"
+filename = "2022-02-09_sequence_list.csv"
 
 df = CSV.read(
-    "/$home_dir/data/$filename",
+    "/$home_dir/data/twist_orders/$filename",
     types=Dict(
         "fwd_primer" => String,
         "rev_primer1" => String,
@@ -29,4 +29,4 @@ df.genes = parse.(Vector{String}, df.genes)
 df.sequence = [LongDNASeq(seq) for seq in df.sequence]
 ##
 promoters = df.promoter |> unique
-wgregseq.quality_control.check_dataframe(df, site_start=27, site_end=186)
+wgregseq.quality_control.check_dataframe(df, site_start=27, site_end=186, print_results=false)

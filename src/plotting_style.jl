@@ -2,7 +2,7 @@ using CairoMakie
 
 function default_makie!()
     if ~isfile(assetpath("fonts", "Lucida-sans-Unicode-Regular.ttf"))
-        @warn "Lucida sans Unicode Regular font not added to Makie Fonts. Add to `~/.julia/packages/Makie/gQOQF/assets/fonts/`. Defaulting to NotoSans."
+        #@warn "Lucida sans Unicode Regular font not added to Makie Fonts. Add to `~/.julia/packages/Makie/gQOQF/assets/fonts/`. Defaulting to NotoSans."
         Font = assetpath("fonts", "NotoSans-Regular.tff")
     else
         Font = assetpath("fonts", "Lucida-Sans-Unicode-Regular.ttf")

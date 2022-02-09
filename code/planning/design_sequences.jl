@@ -15,7 +15,7 @@ println("Importing Data...")
 gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrames.DataFrame, comment="#")
 
 # Give IDs to groups for adding primers later
-group_dict = Dict(filter(x -> occursin("Antibiotic/toxin", x), gene_table.group) .=> 1)
+group_dict = Dict{String, Int64}(filter(x -> occursin("Antibiotic/toxin", x), gene_table.group) .=> 1)
 group_dict["Gold Standard"] = 2
 group_dict["Heinemann dataset"] = 3
 group_dict["uncharacterized protein"] = 4
@@ -93,6 +93,7 @@ gene_group_ID_dict = Dict(gene_table.name .=> gene_table.group_ID)
 println("Done!")
 println()
 ## Get promoters for genes
+
 println("Finding Promoters...")
 df_list = DataFrame[]
 genes_no_tss = []
@@ -107,8 +108,6 @@ end
 df = vcat(df_list...) |> unique
 println("Done!")
 println()
-
-
 ## Missing TSS
 println("Looking for TSS in Urtecho data set...")
 # Group genes into operons / transcription units
@@ -116,7 +115,9 @@ df_no_prom = DataFrame()
 for gene in genes_no_tss
     append!(df_no_prom, operons_without_promoters[map(x -> gene in x, operons_without_promoters.genes), :])
 end
-unique!(df_no_prom)
+if nrow(df_no_prom) > 0
+    unique!(df_no_prom)
+end
 
 # Look for these units in Urtecho et al. 2020 dataset
 # import Urtecho data
@@ -124,6 +125,7 @@ urtecho_tss = CSV.read(
     "/$home_dir/data/urtecho_2020/tss_operon_regulation.txt", 
     DataFrame 
 )
+
 
 
 function occursin_operon(gene, operon)
@@ -163,7 +165,9 @@ for i in 1:nrow(df_no_prom)
 end
 
 # Add found promoters to list
-append!(df, df_tss_urtecho[:, ["genes", "tss", "direction", "gene_position", "promoter", "evidence"]])
+if nrow(df_tss_urtecho) > 0
+    append!(df, df_tss_urtecho[:, ["genes", "tss", "direction", "gene_position", "promoter", "evidence"]])
+end
 
 # Remove genes with identified promoters from list of genes without promoters
 df_no_prom = df_no_prom[Not(delete_index_list), :]
@@ -197,19 +201,21 @@ for i in 1:nrow(df_no_prom)
     push!(name_list, join(df_no_prom[i, "genes"], "_") * "_predicted")
 end
 
-# Add start sites to genes 
-insertcols!(df_no_prom, 2, :tss =>tss_list)
-# Add information that they are predicted
-insertcols!(df_no_prom, 5, :promoter =>name_list)
-insertcols!(df_no_prom, 5, :evidence =>fill(["COMP"], nrow(df_no_prom)))
-# Add promoters to list
-append!(df, df_no_prom)
+if nrow(df_no_prom)  >0 
+    # Add start sites to genes 
+    insertcols!(df_no_prom, 2, :tss =>tss_list)
+    # Add information that they are predicted
+    insertcols!(df_no_prom, 5, :promoter =>name_list)
+    insertcols!(df_no_prom, 5, :evidence =>fill(["COMP"], nrow(df_no_prom)))
+    # Add promoters to list
+    append!(df, df_no_prom)
+end
 
 println("Done!")
 println()
 
 ## For genes with multiple promoters, take the strongest predicted one
-df
+println(df)
 # Create temporary DataFrame
 temp_df = DataFrame()
 #=
@@ -242,6 +248,9 @@ end
 println("Done!")
 println()
 =#
+
+
+df
 ## Design Sequences for genes with TSS
 println("Creating mutated sequences...")
 df_sequences = DataFrame()
@@ -262,13 +271,13 @@ else
     println("Done!")
     println()
 end
-
+df_sequences
 ## Check sequences for restriction sites 
 gdf = groupby(deepcopy(df_sequences), :genes)
 df_stack = DataFrame()
 
 
-enzymes = ["SalI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI", "PstI", "NsiI"]
+enzymes = ["SalI", "SacI", "NheI", "XbaI", "SpeI", "XhoI", "EcoRI", "ApaI", "ScaI", "NcoI", "MluI", "EcoRV", "BbsI", "BamHI", "AgeI", "PstI", "NsiI", "SbfI"]
 println("Adding restriction enzymes...")
 for enz in enzymes
     if enz ∉ wgregseq.enzyme_list.enzyme
@@ -296,8 +305,8 @@ println("")
 println(df_stack)
 
 # Set these enzymes to disable query
-enz1 = "SpeI"
-enz2 = "SalI"
+enz1 = ""
+enz2 = ""
 
 println("Upstream restriction enzyme (default is SalI by hitting `enter`):")
 while enz1 ∉ wgregseq.enzyme_list.enzyme
@@ -432,9 +441,8 @@ end
 # Save results
 filename = string(Dates.today()) * "_sequence_list.csv"
 filename_twist = string(Dates.today()) * "_sequence_list_twist.csv"
-CSV.write("/$home_dir/data/$filename", df_final)
-CSV.write("/$home_dir/data/$filename_twist", df_final[!, "sequence"])
-println("Sequence list saved in `/$home_dir/data/$filename`")
+CSV.write("/$home_dir/data/twist_orders/$filename", df_final)
+println("Sequence list saved in `/$home_dir/data/twist_orders/$filename`")
 println("Total number of sequences: $(nrow(df_final))")
 
 ##
