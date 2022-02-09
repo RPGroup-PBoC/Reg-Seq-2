@@ -21,3 +21,7 @@ which have a recognition site of length 6, otherwise the sequences won't have th
 which enzymes are used as default, which can be chosen by simply pressing `enter`.
 
 All scripts can be run together by running the script `run_scripts.jl`.
+
+Finally, to confirm that sequences have the right mutation rate, as well as the correct primer and restriction site sequences,
+run the script `quality_control.jl`. The name of the file containing the sequences has to be changed in the code,
+to represent the correct file name.
