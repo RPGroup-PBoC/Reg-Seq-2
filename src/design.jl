@@ -7,7 +7,7 @@ function join_seqs(up::String, down::String)
     return up * down 
 end
 
-function join_seqs(up::BioSequences.LongDNASeq, down::BioSequences.LongDNASeq)
+function join_seqs(up::BioSequences.LongDNA, down::BioSequences.LongDNA)
     return up * down 
 end
 
@@ -16,14 +16,14 @@ function add_sites_oligo(seq::String, up::String, down::String)
     return 
 end
 
-function add_sites_oligo(seq::BioSequences.LongDNASeq, up::BioSequences.LongDNASeq, down::BioSequences.LongDNASeq)
+function add_sites_oligo(seq::BioSequences.LongDNA, up::BioSequences.LongDNA, down::BioSequences.LongDNA)
     return join_seqs(join_seqs(up, seq), down)
 end
 
 
-function add_re_sites(oligo::BioSequences.LongDNASeq, re1::String, re2::String)
-    re1_site = LongDNASeq(enzyme_list[enzyme_list.enzyme.==re1, "site"][1])
-    re2_site = LongDNASeq(enzyme_list[enzyme_list.enzyme.==re2, "site"][1])
+function add_re_sites(oligo::BioSequences.LongDNA, re1::String, re2::String)
+    re1_site = LongDNA{4}(enzyme_list[enzyme_list.enzyme.==re1, "site"][1])
+    re2_site = LongDNA{4}(enzyme_list[enzyme_list.enzyme.==re2, "site"][1])
     return add_sites_oligo(oligo, re1_site, re2_site)
 end
 
@@ -50,13 +50,13 @@ function import_primer(index::Int, direction::String)
 end
 
 
-function add_primer(oligos::Vector{BioSequences.LongDNASeq}, index::Int, direction::String="both")
+function add_primer(oligos::Vector{LongSequence{DNAAlphabet{4}}}, index::Int, direction::String="both")
     if direction == "fwd"
         fwd_primer = import_primer(index, "fwd")
-        rev_primer = LongDNASeq("")
+        rev_primer = LongDNA{4}("")
     elseif direction == "rev"
         rev_primer = import_primer(index, "rev")
-        fwd_primer = LongDNASeq("")
+        fwd_primer = LongDNA{4}("")
     elseif direction == "both"
         fwd_primer = import_primer(index, "fwd")
         rev_primer = import_primer(index, "rev")
@@ -91,12 +91,12 @@ Returns
 output : string
     Genetic sequence upstream and downstream of TSS
 """
-function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequences.LongDNASeq)
+function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequences.LongDNA)
      
     if strand == "-"
         gene = genome[TSS-dn:TSS+up-1]
     
-        outgene = LongDNASeq(gene) |> reverse_complement
+        outgene = LongDNA{4}(gene) |> reverse_complement
         
         left_pos = TSS-dn
         right_pos = TSS+up
@@ -189,7 +189,7 @@ Creates single or double mutants.
     List of mutant sequences. Each element is a string.
 """
 function mutations_rand(
-    sequence::BioSequences.LongDNASeq, 
+    sequence::BioSequences.LongDNA, 
     rate::Float64,
     num_mutants::Int;
     site_start=1, 
@@ -199,7 +199,7 @@ function mutations_rand(
     mutation_window = sequence[site_start:site_end]
     
     # Create list
-    mutants = BioSequences.LongDNASeq[]
+    mutants = BioSequences.LongDNA[]
     push!(mutants, sequence)
         
     mutant_indices = random_mutation_generator(mutation_window, rate, num_mutants)
@@ -224,11 +224,11 @@ sequence_list: array-type
     list of suquences
     
 """
-function find_restriction_sites(enzyme::String, sequence_list::Vector{LongDNASeq})
+function find_restriction_sites(enzyme::String, sequence_list::Vector{LongDNA})
 
     ind = findfirst(x -> x == enzyme, enzyme_list.enzyme)
-    site = LongDNASeq(enzyme_list[ind, :site])
-    return sum(occursin.((site,), sequence_list))
+    site = LongDNA{4}(enzyme_list[ind, :site])
+    return sum(occursin.((ExactSearchQuery(site),), sequence_list))
 end
 
 
@@ -245,8 +245,8 @@ sequence_list: array-type
     list of suquences
     
 """
-function find_restriction_sites(enzyme::Vector{String}, sequence_list::Vector{LongDNASeq})
-    sites = find_restriction_sites.(enzyme, (sequence_list::Vector{LongDNASeq},))
+function find_restriction_sites(enzyme::Vector{String}, sequence_list::Vector{LongDNA})
+    sites = find_restriction_sites.(enzyme, (sequence_list::Vector{LongDNA},))
     return DataFrame(enzyme=enzyme, sites=sites)
 
 end
@@ -262,7 +262,7 @@ La Fleur et al, 2022.
 -----------
 df : DataFrame
     DataFrame containing the transcription start sites for promoters.
-wt_sequence : BioSequences.LongDNASeq
+wt_sequence : BioSequences.LongDNA
     Sequence of wild type genome.
 
 #Returns
@@ -270,7 +270,7 @@ df[ind, :] : Dataframe Row
     Row of DataFrame containing the strongest predicted site.
 
 """
-function find_best_promoter(df::DataFrames.DataFrame, wt_sequence::BioSequences.LongDNASeq)
+function find_best_promoter(df::DataFrames.DataFrame, wt_sequence::BioSequences.LongDNA)
     if "tss" ∉ names(df)
         throw(ArgumentError("DataFrame has no column \"tss\"."))
     end
@@ -303,21 +303,21 @@ end
 """
 """
 function check_primers_re_sites(enz1, enz2, primer, direction)
-    site1 = enzyme_list[enzyme_list.enzyme .== enz1, "site"][1] |> LongDNASeq
-    site2 = enzyme_list[enzyme_list.enzyme .== enz2, "site"][1] |> LongDNASeq
+    site1 = enzyme_list[enzyme_list.enzyme .== enz1, "site"][1] |> LongDNA{4}
+    site2 = enzyme_list[enzyme_list.enzyme .== enz2, "site"][1] |> LongDNA{4}
 
     clear = false
     if direction == "both"
         while clear == false
             fwd_primer = import_primer(primer, "fwd")
             rev_primer = import_primer(primer, "rev")
-            if occursin(site1, fwd_primer)
+            if occursin(ExactSearchQuery(site1), fwd_primer)
                 primer += 1
-            elseif occursin(site1, rev_primer)
+            elseif occursin(ExactSearchQuery(site1), rev_primer)
                 primer += 1
-            elseif occursin(site2, fwd_primer)
+            elseif occursin(ExactSearchQuery(site2), fwd_primer)
                 primer += 1
-            elseif occursin(site2, rev_primer)
+            elseif occursin(ExactSearchQuery(site2), rev_primer)
                 primer += 1
             else
                 clear = true
@@ -326,9 +326,9 @@ function check_primers_re_sites(enz1, enz2, primer, direction)
     elseif direction in ["fwd", "rev"]
         while clear == false
             _primer = import_primer(primer, direction)
-            if occursin(site1, _primer)
+            if occursin(ExactSearchQuery(site1), _primer)
                 primer += 1
-            elseif occursin(site2, _primer)
+            elseif occursin(ExactSearchQuery(site2), _primer)
                 primer += 1
             else
                 clear = true

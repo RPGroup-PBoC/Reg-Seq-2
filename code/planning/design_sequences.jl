@@ -19,6 +19,7 @@ group_dict = Dict{String, Int64}(filter(x -> occursin("Antibiotic/toxin", x), ge
 group_dict["Gold Standard"] = 2
 group_dict["Heinemann dataset"] = 3
 group_dict["uncharacterized protein"] = 4
+group_dict["Heinemann dataset uncharacterized"] = 7
 group_dict["YmfT_modulon"] = 5
 group_dict["YgeV_modulon"] = 6
 groups = zeros(nrow(gene_table))
@@ -26,7 +27,7 @@ for i in 1:nrow(gene_table)
     if gene_table[i, "group"] in keys(group_dict)
         groups[i] = group_dict[gene_table[i, "group"]]
     else
-        groups[i] = 7
+        groups[i] = 8
     end
 end
 
@@ -261,7 +262,8 @@ for row in eachrow(df)
     promoter = row.promoter
     seq = wgregseq.design.find_seq(tss, direction, 115, 45, wt_sequence)[1]
     mut_list = wgregseq.design.mutations_rand(seq, 0.1, 1500)
-    _df = DataFrame(sequence=mut_list, genes=fill(genes, 1501), promoter=fill(promoter, 1501))
+    names = ["$(promoter)_$i" for i in 0:1500]
+    _df = DataFrame(sequence=mut_list, genes=fill(genes, 1501), promoter=fill(promoter, 1501), name=names)
     global df_sequences = vcat(df_sequences, _df)
 end
 
@@ -287,7 +289,7 @@ end
 
 
 for group in gdf
-    group[:, "sequence"] = wgregseq.design.add_primer(convert(Vector{BioSequences.LongDNASeq}, (group.sequence)), 100, "both")
+    group[:, "sequence"] = wgregseq.design.add_primer(convert(Vector{LongSequence{DNAAlphabet{4}}}, (group.sequence)), 100, "both")
     df_restriction = wgregseq.design.find_restriction_sites(enzymes, group[:, "sequence"])
     sort!(df_restriction, "sites")
     dict = Dict{Any, Any}(df_restriction.enzyme .=> df_restriction.sites)
@@ -308,21 +310,21 @@ println(df_stack)
 enz1 = ""
 enz2 = ""
 
-println("Upstream restriction enzyme (default is SalI by hitting `enter`):")
+println("Upstream restriction enzyme (default is SpeI by hitting `enter`):")
 while enz1 ∉ wgregseq.enzyme_list.enzyme
     global enz1 = readline()
     if enz1 == ""
-        global enz1 = "SalI"
+        global enz1 = "SpeI"
     end
     if enz1 ∉ wgregseq.enzyme_list.enzyme
         println("$enz1 not in list of enzymes")
     end
 end
-println("Downstream restriction enzyme (default is SacI by hitting `enter`):")
+println("Downstream restriction enzyme (default is ApaI by hitting `enter`):")
 while enz2 ∉ wgregseq.enzyme_list.enzyme
     global enz2 = readline()
     if enz2 == ""
-        global enz2 = "SacI"
+        global enz2 = "ApaI"
     end
     if enz2 ∉ wgregseq.enzyme_list.enzyme
         println("$enz2 not in list of enzymes")
@@ -345,46 +347,32 @@ println()
 ## Adding primers
 # First we check that the primer does not contain the restriction site. If that happens
 # we try to take the next primer
-println("Adding forward and reverse primers...")
-
-primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100, "both")
-insertcols!(df_sequences, 4, :fwd_primer => fill((primer, (1, 20)), nrow(df_sequences)))
-insertcols!(df_sequences, 5, :rev_primer1 => fill((primer, (193, 212)), nrow(df_sequences)))
-df_sequences.sequence = wgregseq.design.add_primer(df_sequences.sequence, primer)
-
-# Confirm that the primers are correct
-fwd_primer = wgregseq.design.import_primer(primer, "fwd")
-rev_primer = wgregseq.design.import_primer(primer, "rev")
-if any([seq[1:20] != fwd_primer for seq in df_sequences.sequence])
-    throw(ErrorException("Not all sequences have the right forward primer!"))
-elseif any([seq[end-19:end] != rev_primer for seq in df_sequences.sequence])
-    println("Done!")
-    println()
-end
 
 ## Add reverse primers
 println("Adding primers for groups of 5 genes...")
 n_per_group = 5
 cop_df = deepcopy(df_sequences)
-insertcols!(cop_df, 4, :rev_primer2 => fill((0, (213, 231)), nrow(cop_df)))
-insertcols!(cop_df, 5, :rev_primer3 => fill((0, (232, 250)), nrow(cop_df)))
+insertcols!(cop_df, 4, :rev_primer2 => fill((0, (193, 211)), nrow(cop_df)))
+insertcols!(cop_df, 5, :rev_primer3 => fill((0, (212, 230)), nrow(cop_df)))
 
 gdf = groupby(cop_df, :genes)
 
 # Go through groups of n_per_group genes and add primer
+primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100, "both")
+primer_0 = deepcopy(primer)
 i = 1
 while i * n_per_group < length(gdf)
-    global primer = wgregseq.design.check_primers_re_sites(enz1, enz2, 100 + i, "rev") 
+    global primer = wgregseq.design.check_primers_re_sites(enz1, enz2, primer + 1, "rev") 
     for _df in gdf[1+(i-1)*n_per_group:i*n_per_group]
         _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-        _df[:, "rev_primer2"] =  fill((primer, (213, 231)), nrow(_df))
+        _df[:, "rev_primer2"] =  fill((primer, (193, 211)), nrow(_df))
     end
     global i += 1
 end
 primer = wgregseq.design.check_primers_re_sites(enz1, enz2, primer+1, "rev")
 for _df in gdf[(i - 1)*n_per_group+1:end]
     _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-    _df[:, "rev_primer2"] =  fill((primer, (213, 231)), nrow(_df))
+    _df[:, "rev_primer2"] =  fill((primer, (193, 211)), nrow(_df))
 end
 
 # Combine sequences to single table
@@ -392,8 +380,8 @@ df_final = combine(gdf, :)
 df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 
 # Confirm sequence length
-if any(length.(df_final.sequence) .!= 231)
-    throw(ErrorException("Not all sequences are 231bp!"))
+if any(length.(df_final.sequence) .!= 191)
+    throw(ErrorException("Not all sequences are 191bp!"))
 else
     println("Done!")
     println()
@@ -422,7 +410,7 @@ for _df in gdf
     end
     local primer = wgregseq.design.check_primers_re_sites(enz1, enz2, Int(200 + ID), "rev")
     _df[:, "sequence"] = wgregseq.design.add_primer(_df[:, "sequence"], primer, "rev")
-    _df[:, "rev_primer3"] =  fill((primer, (232, 250)), nrow(_df))
+    _df[:, "rev_primer3"] =  fill((primer, (212, 230)), nrow(_df))
 end
 
 # Combine groups to single table
@@ -430,8 +418,27 @@ df_final = combine(gdf, :)
 df_final.sequence = [ x[1:end-1] for x in df_final.sequence]
 
 # Confirm Length
-if any(length.(df_final.sequence) .!= 250)
-    throw(ErrorException("Not all sequences are 250bp!"))
+if any(length.(df_final.sequence) .!= 210)
+    throw(ErrorException("Not all sequences are 210bp!"))
+else
+    println("Done!")
+    println()
+end
+
+println("Adding forward and reverse primers...")
+
+
+insertcols!(df_final, 4, :fwd_primer => fill((primer_0, (1, 20)), nrow(df_final)))
+insertcols!(df_final, 5, :rev_primer1 => fill((primer_0, (231, 250)), nrow(df_final)))
+df_final.sequence = wgregseq.design.add_primer(df_final.sequence, primer_0)
+
+# Confirm that the primers are correct
+fwd_primer = wgregseq.design.import_primer(primer_0, "fwd")
+rev_primer = wgregseq.design.import_primer(primer_0, "rev")
+if any([seq[1:20] != fwd_primer for seq in df_final.sequence])
+    throw(ErrorException("Not all sequences have the right forward primer!"))
+elseif any([seq[end-19:end] != rev_primer for seq in df_final.sequence])
+    throw(ErrorException("Not all sequences have the right reverse primer!"))
 else
     println("Done!")
     println()
@@ -440,7 +447,6 @@ end
 ##
 # Save results
 filename = string(Dates.today()) * "_sequence_list.csv"
-filename_twist = string(Dates.today()) * "_sequence_list_twist.csv"
 CSV.write("/$home_dir/data/twist_orders/$filename", df_final)
 println("Sequence list saved in `/$home_dir/data/twist_orders/$filename`")
 println("Total number of sequences: $(nrow(df_final))")

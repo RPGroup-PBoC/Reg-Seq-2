@@ -47,18 +47,28 @@ tnaA	Heinemann dataset	tryptophanase / L-cysteine desulfhydrase
 mglB	Heinemann dataset	D-galactose/methyl-galactoside ABC transporter periplasmic binding protein
 gatA	Heinemann dataset	galactitol-specific PTS enzyme IIB component
 lpp	Heinemann dataset	murein lipoprotein
-#osmY	Heinemann dataset	periplasmic chaperone
-#aldA	Heinemann dataset	aldehyde dehydrogenase A, NAD-linked
-#osmC	Heinemann dataset	osmotically inducible peroxiredoxin
-#gatY	Heinemann dataset	tagatose-1,6-bisphosphate aldolase 2
-#asnA	Heinemann dataset	asparagine synthetase A
-#osmB	Heinemann dataset	osmotically-inducible lipoprotein OsmB
-#cusF	Heinemann dataset	copper/silver export system periplasmic binding protein
-#idnO	Heinemann dataset	5-keto-D-gluconate 5-reductase
-#ygaU	Heinemann dataset	K+ binding protein
 tmaR	Heinemann dataset	PTS system regulator TmaR
-yabP	uncharacterized protein	
-yabQ	uncharacterized protein	multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant
+cusF	Heinemann dataset uncharacterized
+yjbJ	Heinemann dataset uncharacterized	
+elaB	Heinemann dataset uncharacterized	
+yncE	Heinemann dataset uncharacterized	
+yeeX	Heinemann dataset uncharacterized	
+yqjD	Heinemann dataset uncharacterized	
+ybaY	Heinemann dataset uncharacterized	
+ygiW	Heinemann dataset uncharacterized	
+zapB	Heinemann dataset uncharacterized
+ygaU	Heinemann dataset uncharacterized
+ybeD	Heinemann dataset uncharacterized
+#ybaB	Heinemann dataset uncharacterized
+#yifE	Heinemann dataset uncharacterized
+#iscX	Heinemann dataset uncharacterized
+#ybdZ	Heinemann dataset uncharacterized
+#erpA	Heinemann dataset uncharacterized
+#yajQ	Heinemann dataset uncharacterized
+#yggL	Heinemann dataset uncharacterized
+#yiiS	Heinemann dataset uncharacterized
+#yabP	uncharacterized protein	
+#yabQ	uncharacterized protein	multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant
 yacC	uncharacterized protein	putative lipoprotein
 yacH	uncharacterized protein	may encode a membrane protein
 yadG	uncharacterized protein	putative ABC transporter ATP-binding protein
@@ -67,30 +77,15 @@ yadE	uncharacterized protein	putative polysaccharide deacetylase lipoprotein
 yadM	uncharacterized protein	putative fimbrial protein
 yadN	uncharacterized protein	putative fimbrial protein
 yadS	uncharacterized protein	PF03458 family protein
+ykfM	uncharacterized protein
+#ykgL	uncharacterized protein
+ykgR	uncharacterized protein
+yahC	uncharacterized protein	
+yahL	uncharacterized protein	
+yahM	uncharacterized protein	
+#yahN	uncharacterized protein	
 acrB	Antibiotic/toxin	Encodes inner membrane component of a tripartite, proton dependent, drug efflux pump.
 acrZ	Antibiotic/toxin	Encodes a small membrane protein associated with the AcrAB-TolC multidrug efflux pump 
-#arcA	metabolism	DNA binding transcriptional regulator/represses wide variety of aerobic enzymes
-#arcB	metabolism	mediates anaerobic repression of aerobic genes
-#yaeR	uncharacterized protein	VOC domain-containing protein YaeR
-#yaeQ	uncharacterized protein	
-#yafT	uncharacterized protein	lipoprotein YafT
-#ykfM	uncharacterized protein	
-#yafZ	uncharacterized protein	CP4-6 prophage; DUF932 domain-containing protein YafZ
-#yagK	uncharacterized protein	CP4-6 prophage; uncharacterized protein YagK
-#yagJ	uncharacterized protein	CP4-6 prophage; protein YagJ
-#yagL	uncharacterized protein	CP4-6 prophage; resolvase-like catalytic domain-containing protein YagL
-#yagM	uncharacterized protein	CP4-6 prophage; protein YagM
-#ykgJ	uncharacterized protein	putative metal-chelating domain-containing protein YkgJ
-#ykgL	uncharacterized protein	
-#ykgR	uncharacterized protein	
-#ykgE	uncharacterized protein	putative lactate utilization oxidoreductase YkgE
-#ykgH	uncharacterized protein	
-#yahC	uncharacterized protein	
-#yahL	uncharacterized protein	
-#yahM	uncharacterized protein	
-#yahN	uncharacterized protein	
-#hokC	Antibiotic/toxin	Confers toxic function
-#mokC	Antibiotic/toxin	Confers toxic function
 ldrD	Antibiotic/toxin	Acts as the toxin of a Type I toxin-antitoxin pair
 rdlD	Antibiotic/toxin	Regulates the LdrD toxin translation
 tabA	Antibiotic/toxin	May decrease biofilm dispersal in response to several toxin-antitoxin systems

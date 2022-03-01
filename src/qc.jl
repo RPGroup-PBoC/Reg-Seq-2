@@ -88,7 +88,7 @@ function check_dataframe(df; print_results=true, site_start=1, site_end=nothing)
             write(file, output)
         end
     end
-
+    check_primers_off_target(df)
     promoter = df.promoter |> unique
     fig = Figure(resolution=(15*length(promoter), 800))
     ax = Axis(fig[1, 1])
@@ -132,8 +132,8 @@ function check_cut_sites(df)
 
         site1 = enzyme_list[enzyme_list.enzyme .== enz1, "site"][1]
         site2 = enzyme_list[enzyme_list.enzyme .== enz2, "site"][1]
-        sites_correct *= ~any(map(seq -> seq[21:26] != LongDNASeq(site1),  _df.sequence))
-        sites_correct *= ~any(map(seq -> seq[187:192] != LongDNASeq(site2),  _df.sequence))
+        sites_correct *= ~any(map(seq -> seq[21:26] != LongDNA{4}(site1),  _df.sequence))
+        sites_correct *= ~any(map(seq -> seq[187:192] != LongDNA{4}(site2),  _df.sequence))
     end
     return sites_correct
 end
@@ -149,8 +149,45 @@ function check_primers(df)
             ind, positions  = unique(_df[!, col])[1]
 
             primer_seq = import_primer(ind, direction)[1:(positions[2]-positions[1]+1)]
-            primers_correct *= ~any(map(seq -> seq[positions[1]:positions[2]] != LongDNASeq(primer_seq),  _df.sequence))
+            primers_correct *= ~any(map(seq -> seq[positions[1]:positions[2]] != LongDNA{4}(primer_seq),  _df.sequence))
         end
     end
     return primers_correct
 end
+
+
+
+function check_primers_off_target(df)
+    primer_cols = filter(x -> occursin("rev", x), names(df))
+    for col in primer_cols
+        primers = unique(df[!, col])
+        for primer in primers
+            primer_len = primer[2][2] - primer[2][1] + 1
+            println(primer)
+            primer_seq = import_primer(primer[1], "rev")[1:primer_len]
+            query = ApproximateSearchQuery(primer_seq)
+            inds0 = [~isnothing(findfirst(query, 0, seq)) for seq in df.sequence]
+            x0 = (inds0 .!= map(x -> x == primer, df[!, col]))
+
+            x1 = [findfirst(query, 1, seq) for seq in df.sequence]
+            x1 = x1[.~ isnothing.(x1)]
+            x1 = x1[length.(collect.(x1)) .== primer_len]
+
+            x2 = [findfirst(query, 2, seq) for seq in df.sequence]
+            x2 = x2[.~ isnothing.(x2)]
+            x2 = x2[length.(collect.(x2)) .== primer_len]
+
+            if sum(x0) > 0
+                println("$(sum(x0)) off target binding for primer $(primer[1]) with no mismatches.")
+            elseif length(x1) > 0
+                println("$(length(x1)) off target binding for primer $(primer[1]) with one mismatch.")
+            elseif length(x2) > 0
+                println("$(length(x2)) off target binding for primer $(primer[1]) with two mismatches.")
+            else
+                println("No off target binding for primer $(primer[1]).")
+            end
+            println()
+        end
+    end
+end
+

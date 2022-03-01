@@ -188,8 +188,8 @@ end
 
 
 function get_matrices(coeffs)
-    three_mer = LongDNASeq.(all_kmers(3))
-    two_mer = LongDNASeq.(all_kmers(2))
+    three_mer = LongDNA{4}.(all_kmers(3))
+    two_mer = LongDNA{4}.(all_kmers(2))
     #Extract dG values from model coefficients
     dg10_0 = Dict(three_mer .=> coeffs[1:64])
     dg10_3 = Dict(three_mer .=> coeffs[65:128])
@@ -287,7 +287,7 @@ end
 
 
 
-function (p::Promoter_Calculator)(sequence::BioSequences.LongDNASeq, TSS_range::Tuple{Int64, Int64}=(-1, -1))
+function (p::Promoter_Calculator)(sequence::BioSequences.LongDNA, TSS_range::Tuple{Int64, Int64}=(-1, -1))
    
     if TSS_range == (-1, -1) 
         TSS_range = (1, length(sequence))
@@ -320,7 +320,7 @@ function (p::Promoter_Calculator)(sequence::BioSequences.LongDNASeq, TSS_range::
 end
 
 
-function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNASeq, TSS_range::Tuple{Int64, Int64})
+function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA, TSS_range::Tuple{Int64, Int64})
     UPS_length = 24
     HEX35_length = 6
     UPS_HEX35_SPACER = 1

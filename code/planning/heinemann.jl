@@ -1,11 +1,12 @@
-using CSV, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq, Pandas
+using CSV, CairoMakie, DataFrames, LinearAlgebra, Statistics, wgregseq
 wgregseq.plotting_style.default_makie!()
 
 # Import data. Change path if necessary
-Pandas.to_csv(Pandas.read_excel("data/heinemann_data.xlsx", sheet_name="Table S6", header=[2]), "data/heinemann_data_cleaned.csv")
+#using Pandas
+#Pandas.to_csv(Pandas.read_excel("data/heinemann_data.xlsx", sheet_name="Table S6", header=[2]), "data/heinemann_data_cleaned.csv")
 df = CSV.read("data/heinemann_data_cleaned.csv", DataFrames.DataFrame)
 df = df[.~ismissing.(df.Gene), :]
-
+df[!, "Annotated functional COG group (description)"] |> unique
 ##
 growth_conditions = ["Glucose",
  "LB",
@@ -122,7 +123,9 @@ end
 df.variation = vec(compute_variation(df))
 sort!(df, :variation, rev=true)
 copy_number_plot(df.Gene[1:5])
-
+unknown_ind = coalesce.(df[!, "Annotated functional COG group (description)"] .== "Function unknown", false)
+df[unknown_ind, "Gene"][1:20]
+copy_number_plot(df[unknown_ind, "Gene"][1:20], true)
 ## Compare two genes individually
 
 function compare_genes(gene, growth_condition1, growth_condition2)
