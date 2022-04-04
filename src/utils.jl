@@ -1,3 +1,5 @@
+using BioSequences
+
 # Define custom function for nice imports
 Base.parse(::Type{Vector{String}}, x::String) = Vector{String}(filter(x-> x != ", ", split(x, "\""))[2:end-1])
 function Base.parse(::Type{Vector{Float64}}, x::String)
@@ -24,3 +26,66 @@ end
 
 Base.parse(::Type{Vector{String}}, x::Missing) = String[]
 Base.parse(::Type{Vector{Float64}}, x::Missing) = Float64[]
+
+
+"""
+    onehot_encoder(sequence::BioSequences.LongDNA)
+
+Return One-Hot encoding of DNA sequence.
+"""
+function onehot_encoder(sequence::BioSequences.LongDNA)
+
+    if occursin(ExactSearchQuery(dna"N"), sequence)
+        throw(ArgumentError("Sequence cannot contain 'N'"))
+    end
+        
+    encoder = Dict(DNA_A => 1, DNA_C => 2, DNA_G =>3, DNA_T => 4)
+    encoded_seq = zeros(Int64, length(sequence), 4)
+    for i in 1:length(sequence)
+        encoded_seq[i, encoder[sequence[i]]] = 1
+    end
+    return encoded_seq
+end
+
+
+
+function eval_emat(
+        sequence::BioSequences.LongDNA, 
+        emat; 
+        start_ind_seq::Int64=1, 
+        stop_ind_seq::Int64=length(sequence),
+        start_ind_emat::Int64=1,
+        stop_ind_emat::Int64=size(emat, 1)
+    )
+    
+    if ismissing(stop_ind_emat)
+        stop_ind_emat = size(emat)[1]
+    end
+    
+    if (start_ind_seq < 0) || (start_ind_seq > stop_ind_seq) || (start_ind_seq >length(sequence))
+        throw(ArgumentError("Starting index has to be within the sequence. Start Index: $start_ind_seq, Stop Index: $stop_ind_seq"))
+    end
+    
+    if (start_ind_emat < 0) || (start_ind_emat > stop_ind_emat) || (start_ind_emat >size(emat)[1])
+        throw(ArgumentError("Starting index has to be within the energy matrix. Start Index: $start_ind_emat, Stop Index: $stop_ind_emat"))
+    end
+    
+    if (stop_ind_seq - start_ind_seq) != (stop_ind_emat-start_ind_emat)
+        throw(ArgumentError("Length of sequence not equal to length of energy matrix"))
+    end
+    
+    seq = sequence[start_ind_seq:stop_ind_seq]
+    _emat = emat[start_ind_emat:stop_ind_emat, :]
+    
+    if size(_emat)[1] != length(seq)
+        throw(ArgumentError("Energy matrix has to be the same length as sequence"))
+    elseif size(_emat)[2] != 4
+        throw(ArgumentError("Second dimension has to be of size 4 for energy matrix. Is $(size(emat)[2])"))
+    end
+            
+    onehot_encoder(seq::BioSequences.LongDNA)
+    encoded = onehot_encoder(seq)
+    
+    return sum(encoded .* _emat)
+end
+
