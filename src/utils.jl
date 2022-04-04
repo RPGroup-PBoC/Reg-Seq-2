@@ -48,8 +48,8 @@ function onehot_encoder(sequence::BioSequences.LongDNA)
 end
 
 
-
-function eval_emat(
+"""
+    function eval_emat(
         sequence::BioSequences.LongDNA, 
         emat; 
         start_ind_seq::Int64=1, 
@@ -57,6 +57,30 @@ function eval_emat(
         start_ind_emat::Int64=1,
         stop_ind_emat::Int64=size(emat, 1)
     )
+
+Evaluate energy matrix on given sequence.
+
+# Parameters
+- sequence: DNA sequence that is to be evaluated. Has to be either a string or BioSequences.LongDNA
+- emat: Energy Matrix
+- start_ind_seq: First index in the sequence to be evaluated. Default is 1.
+- stop_ind_seq: Last index in the sequence to evaluated. Default is the last index of the sequence.
+- start_index_seq: First row of energy matrix to be evaluated. Default is 1.
+- stop_ind_seq: Last row of energy matrix to be evaluated. Default is the last row of the matrix.
+
+"""
+function eval_emat(
+        sequence::Union{BioSequences.LongDNA, AbstractString}, 
+        emat::Matrix; 
+        start_ind_seq::Int64=1, 
+        stop_ind_seq::Int64=length(sequence),
+        start_ind_emat::Int64=1,
+        stop_ind_emat::Int64=size(emat, 1)
+    )
+
+    if typeof(sequence) <: AbstractString
+        sequence = BioSequences.LongDNA{4}(sequence)
+    end
     
     if ismissing(stop_ind_emat)
         stop_ind_emat = size(emat)[1]

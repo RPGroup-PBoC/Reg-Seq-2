@@ -301,6 +301,9 @@ end
 
 
 """
+    check_primers_re_sites(enz1, enz2, primer, direction)
+
+Check if restriction enzymes occur in primer site.
 """
 function check_primers_re_sites(enz1, enz2, primer, direction)
     site1 = enzyme_list[enzyme_list.enzyme .== enz1, "site"][1] |> LongDNA{4}

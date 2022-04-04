@@ -39,5 +39,9 @@ end
     
     @test wgregseq.utils.eval_emat(seq2, emat, start_ind_seq=3, stop_ind_seq=4, start_ind_emat=3, stop_ind_emat=4) == 2
     @test_throws ArgumentError wgregseq.utils.eval_emat(seq2, emat, start_ind_seq=3, stop_ind_seq=4, start_ind_emat=2, stop_ind_emat=4)
+
+    seq_string = "ACGTAC"
+    @test wgregseq.utils.eval_emat(seq_string, emat) == 2
+    @test typeof(seq_string) == String
     
 end

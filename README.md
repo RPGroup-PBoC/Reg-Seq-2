@@ -36,4 +36,8 @@ Contains software module in Julia used in this project.
 
 ## test
 
-Should contain tests of the software module.
+Contains test for Julia module.
+
+## notebooks
+
+Contains Jupyter notebooks for demonstrations of code usage.
