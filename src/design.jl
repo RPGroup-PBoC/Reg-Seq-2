@@ -199,7 +199,7 @@ function mutations_rand(
     mutation_window = sequence[site_start:site_end]
     
     # Create list
-    mutants = BioSequences.LongDNA[]
+    mutants = BioSequences.LongDNA{4}[]
     push!(mutants, sequence)
         
     mutant_indices = random_mutation_generator(mutation_window, rate, num_mutants)
