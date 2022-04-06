@@ -11,8 +11,15 @@ wt_sequence = [sequence(record) for record in re][1]
 
 ##
 println("Importing Data...")
-# Import gene list to generate sequences for
-gene_table = CSV.read("/$home_dir/data/100_genes.csv", DataFrames.DataFrame, comment="#")
+# Import gene list to generate sequences
+gene_table = CSV.read(
+    "../data/100_genes.csv", 
+    DataFrames.DataFrame, 
+    delim=",",
+    comment="#",
+    missingstring="none",
+)
+
 
 # Give IDs to groups for adding primers later
 group_dict = Dict{String, Int64}(filter(x -> occursin("Antibiotic/toxin", x), gene_table.group) .=> 1)
