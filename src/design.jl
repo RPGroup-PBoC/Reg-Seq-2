@@ -189,7 +189,7 @@ Creates single or double mutants.
     List of mutant sequences. Each element is a string.
 """
 function mutations_rand(
-    sequence::BioSequences.LongDNA, 
+    sequence::BioSequences.LongDNA{4}, 
     rate::Float64,
     num_mutants::Int;
     site_start=1, 
@@ -224,7 +224,7 @@ sequence_list: array-type
     list of suquences
     
 """
-function find_restriction_sites(enzyme::String, sequence_list::Vector{LongDNA})
+function find_restriction_sites(enzyme::String, sequence_list::Vector{LongSequence{DNAAlphabet{4}}})
 
     ind = findfirst(x -> x == enzyme, enzyme_list.enzyme)
     site = LongDNA{4}(enzyme_list[ind, :site])
@@ -245,8 +245,8 @@ sequence_list: array-type
     list of suquences
     
 """
-function find_restriction_sites(enzyme::Vector{String}, sequence_list::Vector{LongDNA})
-    sites = find_restriction_sites.(enzyme, (sequence_list::Vector{LongDNA},))
+function find_restriction_sites(enzyme::Vector{String}, sequence_list::Vector{LongSequence{DNAAlphabet{4}}})
+    sites = find_restriction_sites.(enzyme, (sequence_list,))
     return DataFrame(enzyme=enzyme, sites=sites)
 
 end
