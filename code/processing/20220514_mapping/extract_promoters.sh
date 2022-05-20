@@ -1,4 +1,6 @@
-group=$2
+#!/bin/bash
+group=$1
+
 
 result=${PWD##*/}
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
@@ -9,17 +11,31 @@ parent_path=${parent_path%/*}
 folder=$parent_path'/data/processed_sequencing/'$result
 mkdir $parent_path'/data/processed_promoters/'
 mkdir $parent_path'/data/processed_promoters/'$result
+
 cd $folder
-file_bc=$(find . -name $group'*R2*.fastq.gz')
-file_prom=$(find . -name $group'*R1*.fastq.gz')
-(
-for file in $FILES
-do
-  ((i=i%N)); ((i++==0)) && wait
-  FILENAME_bc=${file_bc%.fastq.gz}
-  FILENAME_bc=${FILENAME#*/}
-  FILENAME_prom=${file_prom%.fastq.gz}
-  FILENAME_prom=${FILENAME#*/}
-  gunzip -c $file |  awk 'NR%4==2 {print substr($0,0,160)}' > "$parent_path/data/processed_promoters/$result/${FILENAME}_promoters.txt" &
-done
-)
+<<comment
+file_bc=$group'_R2.fastq.gz'
+file_prom=$group'_R1.fastq.gz'
+
+gunzip -c $file_bc | awk ' NR%4==2 {
+        print $0;
+    }
+    ' > $group'_barcodes.txt'
+
+gunzip -c $file_prom | awk ' NR%4==2 {
+        print $0;
+    }
+    ' > $group'_promoters.txt'
+comment
+
+paste $group'_barcodes.txt' $group'_promoters.txt' > $group'_combined.txt'
+sort $group'_combined.txt' | uniq -c | sort -bgr > $group'_collapsed.txt'
+
+
+rm $group'_promoters.txt'
+rm $group'_barcodes.txt'
+rm $group'_combined.txt'
+
+
+
+
