@@ -1,4 +1,4 @@
-using BioSequences
+using BioSequences, CSV, DataFrames
 
 # Define custom function for nice imports
 Base.parse(::Type{Vector{String}}, x::String) = Vector{String}(filter(x-> x != ", ", split(x, "\""))[2:end-1])
@@ -16,7 +16,7 @@ function Base.parse(::Type{Vector{Float64}}, x::String)
 
 end
 
-function Base.parse(::Type{Tuple{Int64, Tuple{Int64, Int64}}}, x::String)
+function Base.parse(::Type{Tuple{Int64, Tuple{Int64, Int64}}}, x::T) where {T<:String}
     numbers = split(x, ", ")
     ind1 = parse(Int64, split(numbers[1], "(")[2])
     ind2 = parse(Int64, split(numbers[2], "(")[2])
@@ -113,3 +113,30 @@ function eval_emat(
     return sum(encoded .* _emat)
 end
 
+
+"""
+    import_twist_order(filename)
+
+Import csv file for twist order. Fixes types in dataframe.
+"""
+function import_twist_order(filename)
+    df = CSV.read(
+        filename,
+        types=Dict(
+            "fwd_primer" => String,
+            "rev_primer1" => String,
+            "rev_primer2" => String,
+            "rev_primer3" => String,
+        ),
+        DataFrame
+    )
+    df.fwd_primer = parse.(Tuple{Int64, Tuple{Int64, Int64}}, df.fwd_primer)
+    df.rev_primer1 = parse.(Tuple{Int64, Tuple{Int64, Int64}}, df.rev_primer1)
+    df.rev_primer2 = parse.(Tuple{Int64, Tuple{Int64, Int64}}, df.rev_primer2)
+    df.rev_primer3 = parse.(Tuple{Int64, Tuple{Int64, Int64}}, df.rev_primer3)
+
+
+    df.genes = parse.(Vector{String}, df.genes)
+    df.sequence = [LongDNA{4}(seq) for seq in df.sequence]
+    return df
+end

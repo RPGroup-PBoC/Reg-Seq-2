@@ -287,7 +287,7 @@ end
 
 
 
-function (p::Promoter_Calculator)(sequence::BioSequences.LongDNA, TSS_range::Tuple{Int64, Int64}=(-1, -1))
+function (p::Promoter_Calculator)(sequence::BioSequences.LongDNA{4}, TSS_range::Tuple{Int64, Int64}=(-1, -1))
    
     if TSS_range == (-1, -1) 
         TSS_range = (1, length(sequence))
@@ -320,7 +320,7 @@ function (p::Promoter_Calculator)(sequence::BioSequences.LongDNA, TSS_range::Tup
 end
 
 
-function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA, TSS_range::Tuple{Int64, Int64})
+function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA{4}, TSS_range::Tuple{Int64, Int64})
     UPS_length = 24
     HEX35_length = 6
     UPS_HEX35_SPACER = 1
