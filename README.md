@@ -3,6 +3,11 @@
 This is the Github Repository for the whole genome Reg-Seq project.
 The code in this project is written in Julia, which can be downloaded [here](https://julialang.org/downloads/).
 
+
+## Setting up Computational Environment
+
+### Julia
+
 To run the code in this project, you need to activate the custom environment, which can be done by starting Julia in this project folder. This can either be done by adding the Julia path as an Environment variable, or by starting the executable Julia file and navigating into the project folder (using the shell mode by typing `;`). Instructions on how Julia can be started from the command line can be found [here](https://julialang.org/downloads/platform/). Once the correct folder is selected, the working environment can be set by typing in the Julia REPL
 
 ```julia
@@ -21,23 +26,39 @@ To run a script use
 julia> include("path/to/script.jl")
 ```
 
-## code
+### Conda
 
-Contains scripts that can be run to reproduce the experiment, from designing sequences to analyzing sequencing results and making figures.
+During processing of sequencing data, we use the software package [`fastp`](https://github.com/OpenGene/fastp). This software can be installed using `conda`, therefore we need to set up an
+appropriate `conda` environment. We provide a suitable `conda` environment that was used to run the processing for this project. The environment can be installed by running
 
-## data
+```
+conda env create -f environment.yml
+```
 
-Contains data files that are either needed for preparing the experiment or is the destination for data files from experiments (not included
-in this repository, can be found at (link)).
+Subsequently, the environment needs to be activated in order to be used. This can be done by
 
-## src
+```
+conda activate wgregseq
+```
 
-Contains software module in Julia used in this project.
+## Repository structure
 
-## test
+### code
 
-Contains test for Julia module.
+Contains all code files used to design experiments, process and analyze data and create figures.
 
-## notebooks
+### src
 
-Contains Jupyter notebooks for demonstrations of code usage.
+Contains the custom `Julia` software module.
+
+### notebooks
+
+Contains explanatory notebooks that walk through certain steps in the experimental design and data processing.
+
+### test
+
+Contains tests for software module.
+
+### data
+
+Contains supplementary data files.
