@@ -5,32 +5,45 @@ status: Accepted
 # 2022-05-14 Mapping Sequencing run
 
 ## Purpose
-In this sequencing run we map the mutated promoters to barcodes. 
+
+In this sequencing run we map the mutated promoters to barcodes.
+
 ## Platform
+
 NextSeq (Caltech Sequencing facility)
 
 ## Template
 
 ## Primers used
+
 PCR1 Forward and Sequencing Read 1 Primer:
+
 TTGGTCCAGTGCCATGTTATCCCTGAATCTAGT
 
 PCR1 Reverse and Sequencing Read 2 Primer:
+
 ATACCTGTAGCTAAATCCCACCCGATGCTCGAC
 
 PCR2 Forward Primer:
+
 AATGATACGGCGACCACCGAGATCTACACTTGGTCCAGTGCCATGTTATCC
 
 PCR2 Reverse Primers:
+
 100 - CAAGCAGAAGACGGCATACGAGATCAGTGTATACCTGTAGCTAAATCCCACCC
+
 110 - CAAGCAGAAGACGGCATACGAGATAGCCATATACCTGTAGCTAAATCCCACCC
+
 201 - CAAGCAGAAGACGGCATACGAGATGTACTGATACCTGTAGCTAAATCCCACCC
+
 204 - CAAGCAGAAGACGGCATACGAGATATCTCGATACCTGTAGCTAAATCCCACCC
 
 Sequencing Index Primer:
+
 GTCGAGCATCGGGTGGGATTTAGCTACAGGTAT
 
 ## Sequencing kit
+
 NextSeq P2 flowcell, PE reads, 170 cycles on read1 and 30 cycles on read2.
 
 ## Materials
@@ -75,4 +88,4 @@ to make the file executable. Then, simply run
 ./extract_promoters.sh
 ```
 
-which creates files containing each barcode and promoter pair, as well as their counts.
+which creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in 
