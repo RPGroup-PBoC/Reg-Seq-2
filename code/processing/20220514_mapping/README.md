@@ -1,25 +1,78 @@
 ---
-status: Rejected
+status: Accepted
 ---
 
-# 2022-04-23 Sequencing run
+# 2022-05-14 Mapping Sequencing run
 
 ## Purpose
-This sequencing run was a test run for a larger NextSeq run to confirm that our custom primers work as expected.
+In this sequencing run we map the mutated promoters to barcodes. 
 ## Platform
 NextSeq (Caltech Sequencing facility)
 
+## Template
+
+## Primers used
+PCR1 Forward and Sequencing Read 1 Primer:
+TTGGTCCAGTGCCATGTTATCCCTGAATCTAGT
+
+PCR1 Reverse and Sequencing Read 2 Primer:
+ATACCTGTAGCTAAATCCCACCCGATGCTCGAC
+
+PCR2 Forward Primer:
+AATGATACGGCGACCACCGAGATCTACACTTGGTCCAGTGCCATGTTATCC
+
+PCR2 Reverse Primers:
+100 - CAAGCAGAAGACGGCATACGAGATCAGTGTATACCTGTAGCTAAATCCCACCC
+110 - CAAGCAGAAGACGGCATACGAGATAGCCATATACCTGTAGCTAAATCCCACCC
+201 - CAAGCAGAAGACGGCATACGAGATGTACTGATACCTGTAGCTAAATCCCACCC
+204 - CAAGCAGAAGACGGCATACGAGATATCTCGATACCTGTAGCTAAATCCCACCC
+
+Sequencing Index Primer:
+GTCGAGCATCGGGTGGGATTTAGCTACAGGTAT
+
 ## Sequencing kit
-NextSeq P2 flowcell, PE reads, 30 cycles on read1 and 170 cycles on read2.
+NextSeq P2 flowcell, PE reads, 170 cycles on read1 and 30 cycles on read2.
 
 ## Materials
 
 | **id** | **barcode-sequence** | **description** |
 | :--: | :--: | :--: |
-| 100 | CAGTGT | Entire library |
-| 110 | AGCCAT | Library Subpool |
-| 201 | GTACTG | Library Subpool |
-| 204 | ATCTCG | Library Subpool |
+| 100 | ACACTG | Entire library |
+| 110 | ATGGCT | Library Subpool |
+| 201 | CAGTAC | Library Subpool |
+| 204 | CGAGAT | Library Subpool |
 
-## Notes and Observations
-This NextSeq run failed. Read1 for the barcode had great quality and gave us many reads. However, read2 for the barcode had very poor quality, which we identified was an issue with the custom primers on the NextSeq flow cell. This problem will be avoided in future runs by the sequencing center.
+## Processing
+Store the sequencing files in
+
+```
+project
+│   README.md  
+│
+└───data
+│   └───sequencing
+|       └───20220514_mapping
+│           │   100_S1_R1_001.fastq.gz
+│           │   100_S1_R2_001.fastq.gz
+│           │   110_S2_R1_001.fastq.gz
+│           │   110_S2_R1_001.fastq.gz
+│           │   201_S3_R1_001.fastq.gz
+│           │   201_S3_R1_001.fastq.gz
+│           │   204_S4_R1_001.fastq.gz
+│           │   204_S4_R1_001.fastq.gz
+
+```
+
+The files are processed using `fastp`. Execute `processing_seq.jl` to filter the sequencing files. Then, when the current working directory is this folder, run 
+
+```
+chmod +x extract_promoters.sh
+```
+
+to make the file executable. Then, simply run
+
+```
+./extract_promoters.sh
+```
+
+which creates files containing each barcode and promoter pair, as well as their counts.

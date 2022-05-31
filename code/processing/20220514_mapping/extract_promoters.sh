@@ -53,6 +53,9 @@ rm $group'_promoters.txt'
 rm $group'_barcodes.txt'
 rm $group'_combined.txt'
 
+awk '{
+    print ">"$2"_"$1"\n"$3;
+    print "\n"
+}'  $group'_collapsed.txt' > $group'_collapsed.fasta'
 
-
-
+mv $group'_collapsed.fasta' $parent_path'/data/processed_promoters/'$result/$group'_collapsed.fasta'
