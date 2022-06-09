@@ -49,6 +49,15 @@ end
 
 
 """
+    onehot_encoder(sequence::BioSequences.LongDNA)
+
+Return One-Hot encoding of DNA sequence.
+"""
+function onehot_encoder(sequence::AbstractString)
+    return onehot_encoder(BioSequences.LongDNA{4}(sequence))
+end
+
+"""
     function eval_emat(
         sequence::BioSequences.LongDNA, 
         emat; 
