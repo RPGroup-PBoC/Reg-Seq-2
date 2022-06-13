@@ -1,40 +1,5 @@
 #!/bin/bash
-############################################################
-# Help                                                     #
-############################################################
-Help()
-{
-   # Display Help
-   echo "Add description here."
-   echo
-   echo "Syntax: scriptTemplate [-g|h|v|V]"
-   echo "options:"
-   echo "h     Print this Help."
-   echo "v     Verbose mode."
-   echo "x     add other options here."
-   echo
-}
 
-############################################################
-############################################################
-# Main program                                             #
-############################################################
-
-# Info(in_file, out_dir)
-# {
-#    # Display Help
-#    filename="${in_file##*/}"
-#    echo "Add description here."
-#    echo
-#    echo "Syntax: scriptTemplate [-g|h|v|V]"
-#    echo "options:"
-#    echo "h     Print this Help."
-#    echo "v     Verbose mode."
-#    echo "x     add other options here."
-#    echo
-# }
-
-############################################################
 ############################################################
 # Process the input options.                               #
 ############################################################
@@ -59,20 +24,19 @@ while getopts ":hi:o:bn:" option; do
 done
 
 # Find working directiory
-# result=${PWD##*/}
+result=${PWD##*/}
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 
-# parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+# Go back path
+parent_path=${parent_path%/*}
+parent_path=${parent_path%/*}
+parent_path=${parent_path%/*}
 
-# # Go back path
-# parent_path=${parent_path%/*}
-# parent_path=${parent_path%/*}
-# parent_path=${parent_path%/*}
+# Find data directory
+folder=$parent_path'/data/processed_promoters/'
 
-# # Find data directory
-# folder=$parent_path'/data/processed_promoters/'
-
-# # Make directories for stored data
-# mkdir $parent_path'/data/processed_promoters/barcodes'
+# Make directories for stored data
+mkdir $parent_path'/data/processed_promoters/barcodes'
 
 # Start the process
 start=$SECONDS
@@ -91,6 +55,7 @@ echo "All Promoters Processed, now adding headers..."
 cd $out_dir
 echo "promoter,barcode,counts,name" > headerfile
 for file in *barcodes.txt; do cat headerfile $file > tmpfile2; mv tmpfile2 "$file"; done
+
 rm headerfile
 
 # terminal output message
@@ -99,13 +64,3 @@ end=$SECONDS
 duration=$(( end - start ))
 echo
 echo "time elapsed: $duration seconds"
-# for f in 'barcodes/*.txt'; do
-#    { ed "$f" < 
-#    1i
-#    promoter,barcode,counts,name
-#    .
-#    x
-# }
-# done
-
-

@@ -1,4 +1,3 @@
-using Glob
 # Set path
 dir = @__DIR__
 home_dir = joinpath(split(dir, "/")[1:end-3])
@@ -12,7 +11,7 @@ DESCRIPTION = "_mapping/"
 INPUT_DIR = "/$(home_dir)/data/sequencing/$(DATE)$(DESCRIPTION)"
 
 # Path to output folder
-OUTPUT_DIR = "/$(home_dir)/data/processed_sequencing_/$(DATE)$(DESCRIPTION)"
+OUTPUT_DIR = "/$(home_dir)/data/processed_sequencing/$(DATE)$(DESCRIPTION)"
 
 # Generate output directory if it doesn't exist
 if ~isdir(OUTPUT_DIR)
@@ -50,7 +49,5 @@ for (ind, s) in zip([100, 110, 201, 204], ["S1", "S2", "S3", "S4"])
     `
 
     # Run program
-    run(`conda activate wgregseq`)
     run(fastp)
-    run(`conda deactivate wgregseq`)
 end
