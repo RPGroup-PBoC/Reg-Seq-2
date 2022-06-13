@@ -31,10 +31,16 @@ file_prom=$group'_R1.fastq.gz'
 gunzip -c $file_bc | awk ' NR%4==2 {
         print $0;
     }
+    NR%4==0 {
+        print $0;
+    }
     ' > $group'_barcodes.txt'
 
 # Find promoters
 gunzip -c $file_prom | awk ' NR%4==2 {
+        print $0;
+    }
+    NR%4==0 {
         print $0;
     }
     ' > $group'_promoters.txt'
@@ -43,19 +49,19 @@ gunzip -c $file_prom | awk ' NR%4==2 {
 paste $group'_barcodes.txt' $group'_promoters.txt' > $group'_combined.txt'
 
 # Sort and count unique combinations
-sort $group'_combined.txt' | uniq -c | sort -bgr > $group'_collapsed.txt'
+cat $group'_combined.txt' | awk 'NR%2==1 {print $0}' | sort | uniq -c | sort -bgr > $group'_collapsed.txt'
 
 # Do some formatting
-tr -s "\t" " " < $group'_collapsed.txt' > $group'_collapsed.txt'
+#tr -s "\t" " " < $group'_collapsed.txt' > $group'_collapsed.txt'
 
 # Remove temporary files
-rm $group'_promoters.txt'
-rm $group'_barcodes.txt'
-rm $group'_combined.txt'
+#rm $group'_promoters.txt'
+#rm $group'_barcodes.txt'
+#rm $group'_combined.txt'
 
 awk '{
     print ">"$2"_"$1"\n"$3;
-    print "\n"
+    print "";
 }'  $group'_collapsed.txt' > $group'_collapsed.fasta'
 
 mv $group'_collapsed.fasta' $parent_path'/data/processed_promoters/'$result/$group'_collapsed.fasta'

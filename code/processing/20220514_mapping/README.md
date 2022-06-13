@@ -88,4 +88,4 @@ to make the file executable. Then, simply run
 ./extract_promoters.sh
 ```
 
-which creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in 
+which creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a `.fastq` file, which will be used to map the sequences to promoters.
