@@ -297,3 +297,6 @@ TSWLatexianTemp*
 ### LaTeX Patch ###
 # glossaries
 *.glstex
+
+# bbmap
+bbmap/*
