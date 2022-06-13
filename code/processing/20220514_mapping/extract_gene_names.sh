@@ -4,24 +4,27 @@
 # Process the input options.                               #
 ############################################################
 # Get the options
-while getopts ":hi:o:bn:" option; do
-   case $option in
-      h) # display Help
-         Help
-         exit;;
-      i) # Input file or directory
-         in_file=$OPTARG;;
-      o) # Output directory
-         out_dir=$OPTARG;;
-      b) # input file is BAM format
-         Name=$OPTARG;;
-      n) # Ener a name
-         Name=$OPTARG;;     
-     \?) # Invalid option
-         echo "Error: Invalid option"
-         exit;;
-   esac
-done
+#while getopts ":hi:o:bn:" option; do
+#   case $option in
+#      h) # display Help
+#         Help
+#         exit;;
+#      i) # Input file or directory
+#         in_file=$OPTARG;;
+#      o) # Output directory
+ #        out_dir=$OPTARG;;
+#      b) # input file is BAM format
+ #        Name=$OPTARG;;
+ #     n) # Enter a name
+#         Name=$OPTARG;;     
+ #    \?) # Invalid option
+ #        echo "Error: Invalid option"
+#         exit;;
+#   esac
+#done
+
+# Group number
+group=$1
 
 # Find working directiory
 result=${PWD##*/}
@@ -33,11 +36,13 @@ parent_path=${parent_path%/*}
 parent_path=${parent_path%/*}
 
 # Find data directory
-folder=$parent_path'/data/processed_promoters/'
+folder=$parent_path'/data/processed_promoters/'$result
+in_file=$folder'/'$group'_collapsed.sam'
+echo $in_file
 
 # Make directories for stored data
-mkdir $parent_path'/data/processed_promoters/barcodes'
-
+mkdir $parent_path'/data/barcodes/'$result'/'$group'_per_gene/'
+out_dir=$parent_path'/data/barcodes/'$result'/'$group'_per_gene'
 # Start the process
 start=$SECONDS
 

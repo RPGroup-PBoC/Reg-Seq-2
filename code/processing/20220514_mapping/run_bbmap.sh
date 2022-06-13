@@ -19,4 +19,4 @@ folder=$parent_path'/data/processed_promoters/'$result
 # make key
 ../../../bbmap/bbmap.sh ref=$parent_path'/data/wt_sequences.fasta'
 
-../../../bbmap/bbmap.sh ambiguous='best' indelfilter='0' nfilter='0' minid='0.85' trimreaddescriptions='t' in=$folder/$group'_collapsed.fasta' out=$folder/$group'100_collapsed.sam' t=8
+../../../bbmap/bbmap.sh ambiguous='best' indelfilter='0' nfilter='0' minid='0.85' trimreaddescriptions='t' in=$folder/$group'_collapsed.fasta' out=$folder/$group'_collapsed.sam' t=8

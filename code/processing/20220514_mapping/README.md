@@ -76,7 +76,20 @@ project
 
 ```
 
-The files are processed using `fastp`. Execute `processing_seq.jl` to filter the sequencing files. Then, when the current working directory is this folder, run 
+The files are processed using `fastp`. Execute `processing_seq.jl` to filter the sequencing files. This can be done by either starting the Julia REPL and using 
+
+```julia
+include("path/to/processing.jl")
+```
+
+or by running in the command line 
+
+```
+julia path/to/processing.jl
+```
+
+
+Then, we extract the barcodes and promoters from the sequencing data. 
 
 ```
 chmod +x extract_promoters.sh
@@ -89,3 +102,5 @@ to make the file executable. Then, simply run
 ```
 
 which creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a `.fastq` file, which will be used to map the sequences to promoters.
+
+To identify which promoter a sequence belongs to, we first need to prepare the data. Therefore, run the script `run_bbmap.sh`. Make sure that `bbmap` is in the correct location. To run this script, the current working directory has to be the folder of this experiment.
