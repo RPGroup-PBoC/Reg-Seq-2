@@ -41,6 +41,10 @@ Subsequently, the environment needs to be activated in order to be used. This ca
 conda activate wgregseq
 ```
 
+### BBmap
+
+During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine.
+
 ## Repository structure
 
 ### code
