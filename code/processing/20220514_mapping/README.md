@@ -89,7 +89,7 @@ julia path/to/processing.jl
 ```
 
 
-Then, we extract the barcodes and promoters from the sequencing data. 
+Then, we extract the barcodes and promoters from the sequencing data. In the following, for every script 
 
 ```
 chmod +x extract_promoters.sh
@@ -98,11 +98,28 @@ chmod +x extract_promoters.sh
 to make the file executable. Then, simply run
 
 ```
-./extract_promoters.sh
+./extract_promoters.sh <group number>
 ```
 
-which creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a `.fastq` file, which will be used to map the sequences to promoters.
+where `<group number>` is replaced by the group number of genes that is supposed to be processed. Here it is one of 100, 110, 201 and 204.
+The script creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a `.fastq` file, which will be used to map the sequences to promoters.
 
-To identify which promoter a sequence belongs to, we first need to prepare the data. Therefore, run the script `run_bbmap.sh`. Make sure that `bbmap` is in the correct location. To run this script, the current working directory has to be the folder of this experiment. Finally, to finish the alignment, run `extract_gene_names.sh` in this folder. The script produces a file for each gene in the experiment, which contains the promoter variants as well as the counts.
+To identify which promoter a sequence belongs to, we first need to prepare the data. Therefore, run the script 
+
+```
+run_bbmap.sh <group number>
+```
+
+Make sure that `bbmap` is in the correct location. To run this script, the current working directory has to be the folder of this experiment. Finally, to finish the alignment, run 
+
+```
+extract_gene_names.sh <group number>
+```
+
+in this folder. The script produces a file for each gene in the experiment, which contains the promoter variants as well as the counts.
 
 The files can be combined again by running `filter_mapping.sh`, which also filters out all combinations of promoter and barcode that have less than 3 counts.
+
+```
+filter_mapping <group number>
+```
