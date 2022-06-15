@@ -1,5 +1,5 @@
 #!/bin/bash
-group=$1
+group=${1:-110}
 # Find working directiory
 result=${PWD##*/}
 
