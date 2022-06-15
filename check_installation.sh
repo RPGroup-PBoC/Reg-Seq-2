@@ -28,7 +28,7 @@ fi
         } || {
             read -p "brew is not installed! Do you want to install it? (Yy/Nn)" yn
             case $yn in
-                [Yy]* ) /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";;
+                [Yy]* ) /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";brew install 'coreutils' && echo "greadlink should work now";;
                 [Nn]* ) echo "Not installing brew. Please make sure that greadlink works manually."; break;;
                 * ) echo "Please answer yes or no";;
             esac
