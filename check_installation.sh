@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 # Check if fastp is installed
 conda list -n wgregseq fastp
 
