@@ -1,4 +1,4 @@
-
+#!/bin/bash
 group=$1
 # Find working directiory
 result=${PWD##*/}
