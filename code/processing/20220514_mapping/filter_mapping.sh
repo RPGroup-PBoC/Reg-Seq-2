@@ -3,7 +3,7 @@ group=${1:-110}
 # Find working directiory
 result=${PWD##*/}
 
-parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+PARENT_PATH=$(dirname $(readlink -f $0))
 
 # Go back path
 parent_path=${parent_path%/*}
