@@ -10,8 +10,11 @@ if test -f "$FILE"; then
 else
     read -p "$FILE does not exist! Want to download bbmap?.(Yy/Nn)" yn
     case $yn in
-        [Yy]* ) {wget 'https://sourceforge.net/projects/bbmap/files/latest/download/BBMap_38.96.tar.gz';tar -xf 'BBMap_38.96.tar.gz' ;rm 'BBMap_38.96.tar.gz'}
-        || {echo "installing bbmap failed, please download it manually and store it in this repository."};;
+        [Yy]* ) {
+            wget 'https://sourceforge.net/projects/bbmap/files/latest/download/BBMap_38.96.tar.gz';tar -xf 'BBMap_38.96.tar.gz' ;rm 'BBMap_38.96.tar.gz';
+        } || {
+            echo "installing bbmap failed, please download it manually and store it in this repository."
+            };;
         [Nn]* ) echo "BBmap was not installed. Please install manually.";;
         * ) echo "Please answer yes or no.";;
     esac 
