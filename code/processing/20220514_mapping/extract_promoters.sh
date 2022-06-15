@@ -6,7 +6,7 @@ group=${1:-110}
 # Find working directiory
 result=${PWD##*/}
 
-PARENT_PATH=$(dirname $(readlink -f $0))
+PARENT_PATH=$(dirname $(greadlink -f $0))
 
 # Go back path
 parent_path=${parent_path%/*}

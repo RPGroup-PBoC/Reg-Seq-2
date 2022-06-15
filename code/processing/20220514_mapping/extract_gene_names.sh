@@ -28,7 +28,7 @@ group=${1:-110}
 
 # Find working directiory
 
-PARENT_PATH=$(dirname $(readlink -f $0))
+PARENT_PATH=$(dirname $(greadlink -f $0))
 result="${PARENT_PATH##*/}"
 echo $result
 
