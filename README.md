@@ -8,17 +8,19 @@ The code in this project is written in Julia, which can be downloaded [here](htt
 
 ### Julia
 
-To run the code in this project, you need to activate the custom environment, which can be done by starting Julia in this project folder. This can either be done by adding the Julia path as an Environment variable, or by starting the executable Julia file and navigating into the project folder (using the shell mode by typing `;`). Instructions on how Julia can be started from the command line can be found [here](https://julialang.org/downloads/platform/). Once the correct folder is selected, the working environment can be set by typing in the Julia REPL
+To run the code in this project, you need to activate the custom environment, which can be done by starting Julia in this project folder. This can either be done by adding the Julia path as an Environment variable, or by starting the executable Julia file and navigating into the project folder (using the shell mode by typing `;`, shell mode can be left by pressing `esc`). Instructions on how Julia can be started from the command line can be found [here](https://julialang.org/downloads/platform/). Once the correct folder is selected, the working environment can be set by first entering package mode (pressing `]`) typing in the Julia REPL
 
 ```julia
-julia> ] activate .
+julia> activate .
 ```
 
 Once the environment is activated, all necessary packages can be installed with
 
 ```julia
-julia> ] instantiate
+julia> instantiate
 ```
+
+Package mode can be left again by typing pressing `esc`.
 
 To run a script use
 
@@ -43,13 +45,13 @@ conda activate wgregseq
 
 ### BBmap
 
-During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine.
+During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine. Replace the `bbmap` folder in this repository with the unpacked folder that you downloaded for bbmap.
 
 ## Repository structure
 
 ### code
 
-Contains all code files used to design experiments, process and analyze data and create figures.
+Contains all code files used to design experiments, process and analyze data and create figures. Look in here to reproduce the results of the paper.
 
 ### src
 
