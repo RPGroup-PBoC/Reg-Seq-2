@@ -45,7 +45,12 @@ conda activate wgregseq
 
 ### BBmap
 
-During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine. Replace the `bbmap` folder in this repository with the unpacked folder that you downloaded for bbmap.
+During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine. Replace the `bbmap` folder in this repository with the unpacked folder that you downloaded for `bbmap`. `bbmap` requires a working Java installation, so make sure that you have one.
+
+### Installation check
+
+Finally, to make sure everything is installed correctly, run `check_installation.sh`. It will prompt you with installation requests if an essential piece of software is missing.
+
 
 ## Repository structure
 
