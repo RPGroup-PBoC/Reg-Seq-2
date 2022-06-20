@@ -3,22 +3,21 @@
 # index for files
 group=${1:-110}
 
-# Find working directiory
-result=${PWD##*/}
 
 PARENT_PATH=$(dirname $(greadlink -f $0))
-
+result=${PARENT_PATH##*/}
+echo $result
 # Go back path
-parent_path=${parent_path%/*}
-parent_path=${parent_path%/*}
-parent_path=${parent_path%/*}
+PARENT_PATH=${PARENT_PATH%/*}
+PARENT_PATH=${PARENT_PATH%/*}
+PARENT_PATH=${PARENT_PATH%/*}
 
 # Find data directory
-folder=$parent_path'/data/processed_sequencing/'$result
+folder=$PARENT_PATH'/data/processed_sequencing/'$result
 
 # Make directories for stored data
-mkdir $parent_path'/data/processed_promoters/'
-mkdir $parent_path'/data/processed_promoters/'$result
+mkdir $PARENT_PATH'/data/processed_promoters/'
+mkdir $PARENT_PATH'/data/processed_promoters/'$result
 
 # Go to data
 cd $folder
