@@ -1,9 +1,8 @@
 #!/bin/bash
 GROUP=${1:-110}
 # Find working directiory
-RESULT=${PWD##*/}
-
 PARENT_PATH=$(dirname $(greadlink -f $0))
+RESULT=${PARENT_PATH##*/}
 
 # Go back path
 PARENT_PATH=${PARENT_PATH%/*}

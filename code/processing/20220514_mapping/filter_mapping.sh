@@ -1,23 +1,23 @@
 #!/bin/bash
 group=${1:-110}
 # Find working directiory
-result=${PWD##*/}
+
 
 PARENT_PATH=$(dirname $(greadlink -f $0))
-
+result="${PARENT_PATH##*/}"
 # Go back path
-parent_path=${parent_path%/*}
-parent_path=${parent_path%/*}
-parent_path=${parent_path%/*}
+PARENT_PATH=${PARENT_PATH%/*}
+PARENT_PATH=${PARENT_PATH%/*}
+PARENT_PATH=${PARENT_PATH%/*}
 
 
 
 # Make directories if not existent
-mkdir $parent_path'/data/barcodes/'$result'/'$group'_per_gene_filtered/'
-mkdir $parent_path'/data/barcodes/'$result'/'$group'_per_gene/'
+mkdir $PARENT_PATH'/data/barcodes/'$result'/'$group'_per_gene_filtered/'
+mkdir $PARENT_PATH'/data/barcodes/'$result'/'$group'_per_gene/'
 
-out_folder=$parent_path'/data/barcodes/'$result'/'$group'_per_gene_filtered/'
-data_folder=$parent_path'/data/barcodes/'$result'/'$group'_per_gene/*'
+out_folder=$PARENT_PATH'/data/barcodes/'$result'/'$group'_per_gene_filtered/'
+data_folder=$PARENT_PATH'/data/barcodes/'$result'/'$group'_per_gene/*'
 
 for FILE in $data_folder;do
   GENE="${FILE##*/}"
