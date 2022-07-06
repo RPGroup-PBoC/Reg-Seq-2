@@ -157,8 +157,27 @@ function mutate_from_index(sequence, index; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T
     return mut_seq
 end
 
+function gen_all_single_mutants(sequence; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T])
+    mutant_list = [sequence]
+    for locus in 1:160
+        for mutation in filter(x-> x != sequence[locus], alphabet)
+            mut_seq = deepcopy(sequence)
+            mut_seq[locus] = mutation
+            push!(mutant_list, mut_seq)
+        end
+    end
+    return mutant_list
+end
 
 """
+
+function random_mutation_generator(sequence, rate, num_mutants)
+    mutant_list = Vector{Vector{Tuple{Int, Int}}}([])
+    for i in 1:num_mutants
+        push!(mutant_list, _random_mutation_generator(sequence, rate))
+    end
+    return mutant_list
+end
 
 
 Creates single or double mutants.
