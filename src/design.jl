@@ -3,24 +3,42 @@ using BioSequences, StatsBase, DataFrames, FASTX
 import ..enzyme_list
 using ..wgregseq: promoter_finder.Promoter_Calculator
 
+
+"""
+    join_seqs(up::String, down::String)
+
+Join two strings.
+"""
 function join_seqs(up::String, down::String)
     return up * down 
 end
 
+
+"""
+    join_seqs(up::BioSequences.LongDNA, down::BioSequences.LongDNA)
+
+Join two DNA sequences.
+"""
 function join_seqs(up::BioSequences.LongDNA, down::BioSequences.LongDNA)
     return up * down 
 end
 
 
-function add_sites_oligo(seq::String, up::String, down::String)
-    return 
-end
+"""
+    add_sites_oligo(seq::BioSequences.LongDNA, up::BioSequences.LongDNA, down::BioSequences.LongDNA)
 
+Add sites upstream and downstream of a DNA sequence.
+"""
 function add_sites_oligo(seq::BioSequences.LongDNA, up::BioSequences.LongDNA, down::BioSequences.LongDNA)
     return join_seqs(join_seqs(up, seq), down)
 end
 
 
+"""
+    add_sites_oligo(seq::BioSequences.LongDNA, up::BioSequences.LongDNA, down::BioSequences.LongDNA)
+
+Add restriction sites for given enzymes upstream and downstream of a DNA sequence.
+"""
 function add_re_sites(oligo::BioSequences.LongDNA, re1::String, re2::String)
     re1_site = LongDNA{4}(enzyme_list[enzyme_list.enzyme.==re1, "site"][1])
     re2_site = LongDNA{4}(enzyme_list[enzyme_list.enzyme.==re2, "site"][1])
@@ -28,6 +46,11 @@ function add_re_sites(oligo::BioSequences.LongDNA, re1::String, re2::String)
 end
 
 
+"""
+    import_primer(index::Int, direction::String)
+
+Import a primer with given index from Kosuri collection.
+"""
 function import_primer(index::Int, direction::String)
     dir = @__DIR__
     path = joinpath(split(dir, '/')[1:end-1])
@@ -44,12 +67,14 @@ function import_primer(index::Int, direction::String)
     else
         throw(ArgumentError("dir has to be either \"fwd\" or \"rev\""))
     end
-
-    
-    
 end
 
 
+"""
+    add_primer(oligos::Vector{LongSequence{DNAAlphabet{4}}}, index::Int, direction::String="both") 
+
+Add primer for given index to DNA sequence. Can add either forward, reverse or both primers.
+"""
 function add_primer(oligos::Vector{LongSequence{DNAAlphabet{4}}}, index::Int, direction::String="both")
     if direction == "fwd"
         fwd_primer = import_primer(index, "fwd")
@@ -121,6 +146,11 @@ function _random_mutation_generator(sequence, rate)::Array{Tuple{Int, Int}, 1}
 end
 
 
+"""
+    random_mutation_generator(sequence, rate, num_mutants)
+
+Create a given number of mutants for a given sequence at a certain rate.
+"""
 function random_mutation_generator(sequence, rate, num_mutants)
     mutant_list = Vector{Vector{Tuple{Int, Int}}}([])
     for i in 1:num_mutants
@@ -128,6 +158,7 @@ function random_mutation_generator(sequence, rate, num_mutants)
     end
     return mutant_list
 end
+
 
 """
     function mutate_from_index(sequence, index, alph)
@@ -157,6 +188,12 @@ function mutate_from_index(sequence, index; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T
     return mut_seq
 end
 
+
+"""
+    gen_all_single_mutants(sequence; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T])
+
+Generate all single mutations for a given sequence. First sequence in list is the wild type sequence.
+"""
 function gen_all_single_mutants(sequence; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T])
     mutant_list = [sequence]
     for locus in 1:160
@@ -170,42 +207,25 @@ function gen_all_single_mutants(sequence; alphabet=[DNA_A, DNA_C, DNA_G, DNA_T])
 end
 
 """
-
-function random_mutation_generator(sequence, rate, num_mutants)
-    mutant_list = Vector{Vector{Tuple{Int, Int}}}([])
-    for i in 1:num_mutants
-        push!(mutant_list, _random_mutation_generator(sequence, rate))
-    end
-    return mutant_list
-end
-
-
-Creates single or double mutants.
+    function mutations_rand(
+        sequence::BioSequences.LongDNA{4}, 
+        rate::Float64,
+        num_mutants::Int;
+        site_start=1, 
+        site_end=length(sequence)
+    )
     
- 
-#Parameters
+
+# Parameters
 ----------
-- sequence : string
-    DNA sequence that is going to be mutated.
-- num_mutants : `Int`, default None
-    Number of mutant sequences. If None, all possible mutatants are created.
-- mut_per_seq : `Int`, default 1
-    Number of mutations per sequence.
-- site_start : `int``, default 0
-    Beginning of the site that is about to be mutated.
-- site_end : int, default -1
-    End of the site that is about to be mutated.
-- alph_type : string, default "DNA"
-    Can either be "DNA" for letter sequences, or "Numeric" for integer sequences.
-- number_fixed : bool
-    If True, the number of mutations is fixed as the rate times length of the sequence.
-- keep_wildtype : bool, default False
-    If True, adds wild type sequence as first sequence in the list.
-    
+- `sequence` : DNA sequence
+- `rate` : rate at which sequences are mutated.
+- `num_mutants` : Number of mutated sequences.
+- `site_start` : Beginning of the site that is about to be mutated, default 0.
+- `site_end` : End of the site that is about to be mutated, default -1 (end).
 #Returns
 -------
-- mutants : list
-    List of mutant sequences. Each element is a string.
+- `mutants` : List of mutant sequences. Each element is a string.
 """
 function mutations_rand(
     sequence::BioSequences.LongDNA{4}, 
