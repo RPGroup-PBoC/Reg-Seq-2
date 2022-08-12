@@ -55,7 +55,7 @@ fi
 echo $BBMAP_PATH
 
 $BBMAP_PATH ref=$PARENT_PATH'/data/wt_sequences.fasta' path=$processing_folder
-
+echo $processing_folder/$group'_collapsed.fasta'
 $BBMAP_PATH ambiguous='best' indelfilter='0' nfilter='0' minid='0.85' trimreaddescriptions='t' in=$processing_folder/$group'_collapsed.fasta' out=$sam_file t='8' path=$processing_folder
 
 

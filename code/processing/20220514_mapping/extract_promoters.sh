@@ -50,13 +50,14 @@ paste $group'_barcodes.txt' $group'_promoters.txt' > $group'_combined.txt'
 # Sort and count unique combinations
 cat $group'_combined.txt' | awk 'NR%2==1 {print $0}' | sort | uniq -c | sort -bgr > $group'_collapsed.txt'
 
+
 # Do some formatting
 #tr -s "\t" " " < $group'_collapsed.txt' > $group'_collapsed.txt'
 
 # Remove temporary files
 rm $group'_promoters.txt'
 rm $group'_barcodes.txt'
-rm $group'_combined.txt'
+#rm $group'_combined.txt'
 
 awk '{
     print ">"$2"_"$1"\n"$3;
