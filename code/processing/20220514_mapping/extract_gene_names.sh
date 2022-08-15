@@ -70,14 +70,14 @@ echo "Assigning gene names to promoter-barcode pairs..."
 awk -v o="$out_dir" 'BEGIN{FS="\t";OFS = ","} !(NR%500000){print NR " Promoters Processed"}; NF>10{gsub(/_/, ",", $1); print $10,$1,$3 >> (o"/"$3"_barcodes.txt")}' "$sam_file"
 
 # terminal output message
-echo "All Promoters Processed, now adding headers..."
-
+#echo "All Promoters Processed, now adding headers..."
+#
 # Loop through output directory and add a header to each file
-cd $out_dir
-echo "promoter,barcode,counts,name" > headerfile
-for file in *barcodes.txt; do cat headerfile $file > tmpfile2; mv tmpfile2 "$file"; done
+#cd $out_dir
+#echo "promoter,barcode,counts,name" > headerfile
+#for file in *barcodes.txt; do cat headerfile $file > tmpfile2; mv tmpfile2 "$file"; done
 
-rm headerfile
+#rm headerfile
 
 # terminal output message
 echo "done! Output files written to " "$out_dir"
