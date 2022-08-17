@@ -300,3 +300,4 @@ TSWLatexianTemp*
 
 # bbmap
 bbmap/*
+*.DS_Store
