@@ -29,8 +29,8 @@ READ2=$(find $FOLDER -name $GROUP"*R2*.fastq.gz")
 OUT1=$OUT_FOLDER"/"$GROUP"_R1.fastq.gz"
 OUT2=$OUT_FOLDER"/"$GROUP"_R2.fastq.gz"
 
-HTML=$OUTPUT_DIR"/"$RESULT"/"$GROUP"_fastp_report.html"
-JSON=$OUTPUT_DIR"/"$RESULT"/"$GROUP"_fastp_report.json"
+HTML=$OUT_FOLDER"/"$GROUP"_fastp_report.html"
+JSON=$OUT_FOLDER"/"$GROUP"_fastp_report.json"
 
 # Define string to be ran on the termina
-fastp --in1 $READ1 --in2 $READ2 --out1 $OUT1 --out2 $OUT2 --trim_tail1 '11' --trim_tail2 '11' --verbose --disable_length_filtering --html $HTML --json $JSON --report_title $html_report --thread '6'
+fastp --in1 $READ1 --in2 $READ2 --out1 $OUT1 --out2 $OUT2 --trim_tail1 '11' --trim_tail2 '11' --verbose --disable_length_filtering --html $HTML --json $JSON --thread '6'
