@@ -112,6 +112,7 @@ df_genes = DataFrames.DataFrame(
     accession=accession_list
     )
 CSV.write("/$home_dir/data/all_genes_table.csv", df_genes)
+
 ##
 # Open Transcription Units
 s = open("/$home_dir/data/ecocyc/transunits.dat") do file
@@ -131,6 +132,8 @@ tu_list = [tu[.~isempty.(tu)] for tu in tu_list]
 # Write to DataFrame
 ID_list = String[]
 promoter_list = []
+TF_list = Vector{String}[]
+
 
 
 for x in tu_list
@@ -151,9 +154,21 @@ for x in tu_list
     else
         push!(promoter_list, "none")
     end
+
+    components = filter(x -> (((x[1] == "COMPONENTS") || (x[1] == "REGULATED-BY")) && (occursin("BS", x[2]) || occursin("REG0", x[2]))), x)
+
+    if ~isempty(components)
+        tf_list = String[]
+        for component in components
+            push!(tf_list, component[2])
+        end
+        push!(TF_list, tf_list)
+    else
+        push!(TF_list, String["none"])
+    end
 end
 
-df_tu = DataFrames.DataFrame(TU_ID=ID_list, promoter_ID=promoter_list)
+df_tu = DataFrames.DataFrame(TU_ID=ID_list, promoter_ID=promoter_list, TF_IDS=TF_list)
 
 tu_genes = Vector{String}[]
 tu_gene_positions = Vector{Float64}[]
@@ -253,6 +268,7 @@ df_joint.genes = coalesce.(df_joint.genes, [["None"]])
 df_joint.direction = coalesce.(df_joint.direction, "0")
 df_joint.tss = coalesce.(df_joint.tss, NaN)
 df_joint.evidence = coalesce.(df_joint.evidence, [["None"]])
+df_joint.TF_IDS = coalesce.(df_joint.TF_IDS, [["None"]])
 println("First 20 rows of list:")
 println(first(df_joint, 20))
 df_joint
@@ -268,7 +284,7 @@ df_joint = temp_df
 
 # Split DataFrame into promoters with TUs and without
 df_joint_prom = df_joint[(df_joint.direction .!= "0") .& (.~ isnan.(df_joint.tss)), :]
-CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promoter", "genes", "gene_position", "direction", "tss", "evidence"]])
+CSV.write("/$home_dir/data/promoter_list_ecocyc.csv", df_joint_prom[:, ["promoter", "genes", "gene_position", "direction", "tss", "evidence", "TF_IDS"]])
 ##
 genes_w_promoters = unique(vcat(df_joint_prom.genes...))
 genes_wo_promoters = filter(x -> x ∉ genes_w_promoters, df_genes.gene)

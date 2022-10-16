@@ -34,6 +34,7 @@ promoter_list_regulonDB = CSV.read(
 promoter_list_ecocyc.genes = parse.(Vector{String}, promoter_list_ecocyc.genes)
 promoter_list_ecocyc.evidence = parse.(Vector{String}, promoter_list_ecocyc.evidence)
 promoter_list_ecocyc.gene_position = parse.(Vector{Float64}, promoter_list_ecocyc.gene_position)
+promoter_list_ecocyc.TF_IDS = parse.(Vector{String}, promoter_list_ecocyc.TF_IDS)
 #=
 promoter_list_regulonDB.genes = parse.(Vector{String}, promoter_list_regulonDB.genes)
 promoter_list_regulonDB.gene_position = parse.(Vector{Float64}, promoter_list_regulonDB.gene_position)
