@@ -1,5 +1,24 @@
 using CairoMakie
 
+my_color_dict = Dict(
+    "orange1" => "#f47c20",
+    "orange2" => "#fecc96",
+    "orange3" => "#ffe4c6",
+    "yellow1" => "#fce317",
+    "yellow2" => "#fff182",
+    "yellow3" => "#fff8c1",
+    "green1" => "#a8cf38",
+    "green2" => "#d1e39b",
+    "green3" => "#e6f0cb",
+    "blue1" => "#324fa2",
+    "blue2" => "#8d92c8",
+    "blue3" => "#dbddef",
+    "purple1" => "#9f2260",
+    "purple2" => "#cca6b6",
+    "purple3" => "#e9d1da",
+    )
+
+
 function default_makie!()
     if ~isfile(assetpath("fonts", "Lucida-sans-Unicode-Regular.ttf"))
         #@warn "Lucida sans Unicode Regular font not added to Makie Fonts. Add to `~/.julia/packages/Makie/gQOQF/assets/fonts/`. Defaulting to NotoSans."
@@ -12,6 +31,9 @@ function default_makie!()
     colors = ["#0173b2", "#de8f05", "#029e73", "#d55e00", "#cc78bc", "#ca9161", "#fbafe4", "#949494", "#ece133", "#56b4e9"]
     colors_new = ["#607794", "#946091", "#947d60", "#609463",
     "#A7B5C9", "#C9A7C7", "#C9B9A7", "#A7C9A9"]
+    
+
+
     theme = Theme(
         Axis = (
             backgroundcolor = "#E3E7E9",

@@ -2,10 +2,22 @@
 \section{Results}
 \subsection{Genes studied}
 \tr{Does this belong into results or introduction?}
-\textcolor{BlueViolet}{In total we present the regulatory architecture of x promoters, which tells us how a total of y genes are regulated. , 18 of which were chosen as so called "gold standards". These genes have well annotated promoters and have been studied in detail in previous experiments \cite{belliveau2018systematic,ireland2020deciphering}. Including this set of genes allows us to compare the method presented in this work to previous iterations and verify the results, as well as find possible derivations or improvements.}
-\subsection{Improved Method and summary of cloning results}
+In total we present the regulatory architecture of x promoters, which tells us how a total of y genes are regulated. 18 promoters were chosen as so called "gold standards". These genes have well annotated promoters and have been studied in detail in previous experiments \cite{belliveau2018systematic,ireland2020deciphering}. Including this set of genes allows us to compare the method presented in this work to previous iterations and verify the results, as well as find possible derivations or improvements. x promoters were chosen for genes that have been identified to have a high variation in protein copy number \tr{Probably should show that in the SI} across a set of 22 growth conditions by Schmidt et al., 2016 \cite{schmidt2016quantitative}. These genes were chosen since a high variation in copy number suggests that there are regulatory proteins controlling the expression of the gene. From the same dataset, a set of x promoters was chosen for genes with unidentified function, as annotated by the Schmidt et al., 2016 \cite{schmidt2016quantitative}. None of these promoters had any regulatory annotation prior to the experiments. Another set of x promoters were chosen for genes that were identified in EcoCyc as not having any functional annotation. Two groups of genes, so called iModulons \cite{lamoureux2021precise} were chosen from the work of Lamoureux et al. 2021, where ca. 800 RNA-Seq datasets were evaluated to find genes that were regulated in a distinct network. \tr{Give details for iModulons and their function in their respective paragraphs?} The \tr{Give summary of all genes at the end of this paragragh.}
+\tr{Continue with genes of defined circuits and toxin/antitoxin genes}
+
+\subsection{Genome Integration of Reporters}
+A major improvement to the Reg-Seq method is the genome integration of the reporter using ORBIT (see supplementary information \ref{sec:genome_int}). By integrating the mutated promoter into the genome instead of keeping it on a plasmid, the variation in copy number per cell is reduced and the total number of reporters per cell is at an absolute minimum. Transcription factors that bind to the native version of the promoter in the chromosome also bind to the promoter copy, unless its binding site is heavily mutated. Hence, if many promoter copies are added to a cell, e.g. via plasmids, transcription factors are more likely to bind the promoter of the reporter \cite{brewster2014transcription}, leading to possible fitness defects of the cell. During the cloning process the reporters are carried on a plasmid with a copy number on the order of 10 (r6k replication origin). This effect can be seen in the results of the barcode mapping for the promoter of the gene \textit{dicC}. In the promoter there is a binding site for DicA between the -9 and +11 positions (relative to the transcription start site), which was not identifiable in the previous iteration of Reg-Seq \cite{ireland2020deciphering}. The sequences obtained for this promoter on our barcode mapping show an increased mutation rate in exactly the site predicted to be the transcription factor binding site, see Supplementary Figure \ref{fig:dicCp}. This means that sequences without mutations in this part of the promoter were not able to be cloned and lead to fitness defects, presumably due to the transcription factor being titrated away from the native promoter in the chromosome.
+
+\subsection{Barcode Mapping}
+
 \subsection{Transcription Factor identification}
 \subsection{Growth Conditions}
+\begin{figure}
+    \centering
+    \includegraphics{../figures/figure2_method_sum.pdf}
+    \caption{Method summary}
+    \label{fig:method_sum}
+\end{figure}
 \subsection{Gold Standard genes}
 \subsection{Ethanol iModulon}
 \subsection{DNA damage repair iModulon}
