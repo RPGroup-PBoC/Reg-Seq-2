@@ -22,22 +22,28 @@ else
     mkdir $OUT_FOLDER
 fi
 
+extract(){
+    FILE=$1
+    filename="${FILE##*/}"
+    filename="${filename%.*}"
+    tmp=${filename#*_}
+    XNA=${tmp%%_*}
+    GC="${filename%%_*}"
+    # Find barcodes
+    gunzip -c $FILE | awk ' NR%4==2 {
+            print $0;
+        }
+        NR%4==0 {
+            print $0;
+        }
+        ' > $OUT_FOLDER"/"$GC'_'$XNA'_barcodes.txt'
+
+    # Sort and count unique combinations
+    cat $OUT_FOLDER"/"$GC'_'$XNA'_barcodes.txt' | awk 'NR%2==1 {print $0}' | sort | uniq -c | sort -bgr > $OUT_FOLDER"/"$GC'_'$XNA'_collapsed.txt'
+
+}
+
 
 for FILE in $DATA_FOLDER;do
-  filename="${FILE##*/}"
-  filename="${filename%.*}"
-  tmp=${filename#*_}
-  XNA=${tmp%%_*}
-  GC="${filename%%_*}"
-  # Find barcodes
-  gunzip -c $FILE | awk ' NR%4==2 {
-        print $0;
-    }
-    NR%4==0 {
-        print $0;
-    }
-    ' > $OUT_FOLDER"/"$GC'_'$XNA'_barcodes.txt'
-
-  # Sort and count unique combinations
-  cat $OUT_FOLDER"/"$GC'_'$XNA'_barcodes.txt' | awk 'NR%2==1 {print $0}' | sort | uniq -c | sort -bgr > $OUT_FOLDER"/"$GC'_'$XNA'_collapsed.txt'
+    extract "$FILE" &
 done
