@@ -18,6 +18,21 @@ promoter_list = CSV.read(
     )
 )
 
+## Some genes may have the wrong synomym
+all_gene_list = CSV.read(
+    "/$home_dir/data/all_genes_table.csv", 
+    DataFrame, 
+    types=Dict(
+        "ID"=>String,
+        "gene"=>String,
+        "gene_position"=>Float64,
+        "direction"=>String
+    )
+)
+
+all_gene_list.synonyms = parse.(Vector{String}, all_gene_list.synonyms)
+all_gene_list.transcription_units = parse.(Vector{String}, all_gene_list.transcription_units)
+
 # Replace columns by nicer types
 promoter_list.genes = parse.(Vector{String}, promoter_list.genes)
 promoter_list.gene_position = parse.(Vector{Float64}, promoter_list.gene_position)

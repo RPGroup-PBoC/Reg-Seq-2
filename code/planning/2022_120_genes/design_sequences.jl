@@ -13,7 +13,7 @@ wt_sequence = [sequence(record) for record in re][1]
 println("Importing Data...")
 # Import gene list to generate sequences
 gene_table = CSV.read(
-    "../data/100_genes.csv", 
+    "/$home_dir/data/100_genes.csv", 
     DataFrames.DataFrame, 
     delim=",",
     comment="#",
