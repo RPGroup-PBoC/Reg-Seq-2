@@ -26,7 +26,10 @@ command=paste
 for i in *$group*.gz; do
     command="$command <(gunzip -cd $i)"
 done
+#eval $command | awk 'NR%4==2 {print $0}' | sort | uniq -c | sort -bgr | awk '{
+#    print ">"$3"_"$1"\n"$2;
+#    print "";
+#}' > $group'_collapsed.fasta'
 eval $command | awk 'NR%4==2 {print $0}' | sort | uniq -c | sort -bgr | awk '{
-    print ">"$3"_"$1"\n"$2;
-    print "";
-}' > $group'_collapsed.fasta'
+    print $3"\t"$2
+}' > $group'_collapsed.txt'

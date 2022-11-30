@@ -13,5 +13,7 @@ MAPPED=$PARENT_PATH'/data/barcodes/20220514_mapping/mapped_barcodes.csv'
 FOLDER=$PARENT_PATH'/data/processed_barcodes/'$RESULT
 
 
-awk 'NR==FNR{a[$1]=$0;next} ($3 in a){b=$3;$3="";print $0 a[b]}'  $MAPPED $FOLDER"/$(gc)_combined.txt" > $FOLDER"/$(gc)_identified.txt"
-echo -e "cDNA_count gDNA_count barcode name mapping_count promoter" | cat - $FOLDER"/$(gc)_identified.txt" > "$FOLDER/$(gc)_identified_.txt"
+awk 'NR==FNR{a[$1]=$0;next} ($3 in a){b=$3;$3="";print $0 a[b]}'  $MAPPED $FOLDER"/${gc}_combined.txt" > $FOLDER"/${gc}_identified_.txt"
+echo -e "cDNA_count gDNA_count barcode name mapping_count promoter" | cat - $FOLDER"/${gc}_identified_.txt" > "$FOLDER/${gc}_identified.txt"
+
+rm $FOLDER"/${gc}_identified_.txt"
