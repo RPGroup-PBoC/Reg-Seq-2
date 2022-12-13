@@ -82,7 +82,7 @@ The files are processed using `fastp`. The first step is to make the bash script
 chmod +x *.sh
 ```
 
-Next, we filter the sequences for quality scores. This is done by running the `processing_seq.sh` script in this folder. Run (replace `<group_number>` by the group of genes that are supposed to be processed, defaults to `110`, the smallest dataset)
+Next, we filter the sequences for quality scores. This is done by running the `processing_seq.sh` script in this folder. Run (replace `<group_number>` by the group of genes that are supposed to be processed, defaults to `110`, the smallest dataset. `100` is the set of all promoter sequences, and is used in the publication.)
 
 ```
 ./processing_seq.sh <group_number>
@@ -95,8 +95,8 @@ Then, we extract the barcodes and promoters from the sequencing data. Run
 ```
 
 where `<group number>` is replaced by the group number of genes that is supposed to be processed.
-The script creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a `.fastq` file, which will be used to map the sequences to promoters.
-
+The script creates files containing each barcode and promoter pair, as well as their counts. The results will be stored in a list (and `.fasta` file), which will be used to map the sequences to promoters.
+**Insert here part about barcode qc**
 To identify which promoter a sequence belongs to, run (make sure to have `bbmap` somewhere in this repo)
 
 ```
