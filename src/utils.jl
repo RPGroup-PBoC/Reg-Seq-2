@@ -149,3 +149,31 @@ function import_twist_order(filename)
     df.sequence = [LongDNA{4}(seq) for seq in df.sequence]
     return df
 end
+
+
+"""
+    function joincols(df, column1::Union{Symbol, String}, column2::Union{Symbol, String})
+
+Join two columns of dataframe. If one column has an entry as `missing`, entry from other column
+is taken. If both columns have an entry, they need to be identical.
+"""
+function joincols(df, column1::Union{Symbol, String}, column2::Union{Symbol, String})
+    new_col = String[]
+    # Iterate through columns
+    for (x, y) in zip(df[:, column1], df[:, column2])
+        # Check if entries are missing
+        miss_arr = [~ismissing(x), ~ismissing(y)]
+        if all(miss_arr)
+            if x != y
+                throw(ErrorException("Columns have non-unique entries"))
+            else
+                push!(new_col, x)
+            end
+        elseif any(miss_arr)
+            push!(new_col, [x, y][miss_arr])
+        #elseif all(.~ miss_arr)
+           # push!(new_col, missing)
+        end
+    end
+    return new_col
+end
