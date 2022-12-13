@@ -8,5 +8,7 @@ Scripts that are used to design experiments for this project.
 
 ## Processing
 
+Scripts that are used to process datasets, such as quality filtering of sequences or extracting features from reads.
+
 ## exploratory
 
