@@ -10,7 +10,7 @@ PARENT_PATH=${PARENT_PATH%/*}
 
 # Data FOLDER
 MAPPED=$PARENT_PATH'/data/barcodes/20220514_mapping/mapped_barcodes.csv'
-FOLDER=$PARENT_PATH'/data/processed_barcodes/'$RESULT
+FOLDER=$PARENT_PATH'/data/extracted_barcodes/'$RESULT
 
 
 awk 'NR==FNR{a[$1]=$0;next} ($3 in a){b=$3;$3="";print $0 a[b]}'  $MAPPED $FOLDER"/${gc}_combined.txt" > $FOLDER"/${gc}_identified_.txt"

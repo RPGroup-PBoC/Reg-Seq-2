@@ -63,7 +63,7 @@ project
 
 ```
 
-The files are processed using `fastp`. The first step is to make the bash scripts in this folder executable. This can be done by using 
+The files are filtered using `fastp`. The first step is to make the bash scripts in this folder executable. This can be done by using 
 
 ```
 chmod +x *.sh
@@ -75,11 +75,42 @@ Next, we filter the sequences for quality scores and trim the trailing six bases
 ./processing_seq.sh
 ```
 
-Then, we extract the barcodes and promoters from the sequencing data. Run
+The result are `fastq` files that contain sequences that pass the filter. The files have the following format:
+
+```
+@A01679:61:HHCV2DMXY:1:1101:1470:1000 1:N:0:ATGGCT
+GTTCACTCGAGTAAAGGATT
++
+FFFFFFFFFFFFFFFFFFFF
+@A01679:61:HHCV2DMXY:1:1101:1506:1000 1:N:0:ATGGCT
+ACAACCCCTAAGGACTTGGG
++
+FFFFFFFFFFFFFFF:FFFF
+@A01679:61:HHCV2DMXY:1:1101:2157:1000 1:N:0:ATGGCT
+AGGATCGACACGAGCCCGTG
++
+FFFFFFFFFFFFFFFFFFFF
+```
+
+From this file we need to extract the barcodes and store them in a separate file. This is done by the script
 
 ```
 ./extract_barcodes.sh
 ```
 
-The script creates files containing each barcode, as well as their counts. The results will be stored in a list (and `.fasta` file), which will be used to map the sequences to promoters.
-**Insert here part about barcode qc**
+The result is a file containing each barcode and its count in that dataset. The files are named `<gc>_<xDNA>_collapsed.csv`,
+
+```
+ 225854 AACGACGCTACTCCGGTGAA
+ 214978 TCTCGCACGTACGCCATTGG
+ 180687 GAAACGCGCTCCGGCGAAGA
+ 153837 CAAAACTTCGATTGTATGGT
+ 152313 ATCCTGTCTTAAAAATAACA
+ 152229 ACCGAATCGTCTACGTCGTA
+ 130225 AAGGAGCGGTTTCACATGGG
+ 105213 AATGAGTACGTCGTAATGTA
+  98047 ACCACCTGTGCGATGGGACA
+  95752 TGACGTGGTACACCCTAAGG
+```
+
+An optional step is to do error correction on barcodes. We go through all barcodes with less than or equal to 2 reads, and look for barcodes with higher counts that have a hamming distance of one, which indicates that the low count barcodes have been a sequencing error. To perform that task, run the Julia script `barcode_error_correction.jl` in our Julia environment (see instructions on first page of the repository).

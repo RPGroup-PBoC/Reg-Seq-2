@@ -5,7 +5,7 @@ sys.path.insert(0, '/home/tom/mpathic')
 from mpathic import learn_model
 
 df = pd.read_csv("../../../../RegSeq/data/sequencing_data/LB_data.csv", index_col=0)
-df = df.loc[df['gene'] == 'araC', :]
+df = df.loc[df['gene'] == 'rspA', :]
 df.rename(
     columns={
         'counts_RNA': 'ct_1',
