@@ -8,10 +8,10 @@ PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 
 # Find data directory
-FOLDER=$PARENT_PATH'/data/processed_sequencing/'$RESULT
+FOLDER=$PARENT_PATH'/data/filtered_sequencing/'$RESULT
 DATA_FOLDER=$FOLDER"/*"
 # Make directories for stored data
-OUT_FOLDER=$PARENT_PATH'/data/processed_barcodes/'$RESULT
+OUT_FOLDER=$PARENT_PATH'/data/extracted_barcodes/'$RESULT
 
 echo $DATA_FOLDER
 

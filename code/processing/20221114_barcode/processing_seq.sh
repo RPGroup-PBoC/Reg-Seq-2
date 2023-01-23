@@ -11,7 +11,7 @@ PARENT_PATH=${PARENT_PATH%/*}
 # Data FOLDER
 FOLDER=$PARENT_PATH'/data/sequencing/'$RESULT
 DATA_FOLDER=$FOLDER"/*"
-OUT_FOLDER=$PARENT_PATH'/data/processed_sequencing/'$RESULT
+OUT_FOLDER=$PARENT_PATH'/data/filtered_sequencing/'$RESULT
 
 if [ -d $OUT_FOLDER ] 
 then
