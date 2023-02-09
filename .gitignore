@@ -303,4 +303,5 @@ bbmap/*
 *.DS_Store
 
 *test_error
-**/figures/*doc/01_introduction.tex doc/03_results.tex doc/05_acknowledgements doc/20230113-tom-regseq2.pdf doc/20230116_regseq_intro_theoSI.pdf doc/experimental_SI.tex doc/figures_SI.tex doc/main.pdf doc/main.tex doc/regseq_refs.bib doc/theoretical_SI.tex doc/to_do_list.tex
+**/figures/*
+doc/*
