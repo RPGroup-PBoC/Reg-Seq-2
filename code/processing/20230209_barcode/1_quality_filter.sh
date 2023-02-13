@@ -22,11 +22,12 @@ else
 fi
 
 FILES=("RP88" "RG88" "RP260" "RG260" "DG" "DP")
+source activate fastp_env
 
 for FILE in "${FILES[@]}";do
 for _FILE in $DATA_FOLDER"/"$FILE*R1*;do
   echo $_FILE
-  OUT1=$OUT_FOLDER"/"$FILE".fastq.gz"
+  OUT1=$OUT_FOLDER"/"$FILE".fastq"
   HTML=$OUT_FOLDER"/"$FILE"_fastp_report.html"
   JSON=$OUT_FOLDER"/"$FILE"_fastp_report.json"
   fastp --in1 $_FILE --out1 $OUT1 --trim_tail1 '6'  --verbose --disable_length_filtering --html $HTML --json $JSON --report_title $html_report --thread '6' -q '20' --n_base_limit '0' --unqualified_percent_limit '10'
