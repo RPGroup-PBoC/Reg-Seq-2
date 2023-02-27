@@ -24,5 +24,9 @@ include("utils.jl")
 export parse
 end
 
+module analysis_utils
+include("analysis_utils.jl")
+end
+
 
 end # module
