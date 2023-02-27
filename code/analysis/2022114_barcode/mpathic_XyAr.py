@@ -30,7 +30,7 @@ def run(gene):
     db = "../../../data/mpathic_footprints/20221114_barcode/{}_XyAr_dataset_db".format(gene)
     _df = df.loc[df.name == gene, :]
     _df = _df.loc[_df.counts < 1000, :]
-    _df = _df.loc[_df.ct_1/_df.ct > 0.05, :]
+    _df = _df.loc[_df.ct_1/_df.ct > 0.02, :]
     mcmc_df = learn_model.main(
         df=_df,
         lm='IM',
@@ -52,7 +52,7 @@ def run(gene):
         drop_library=False,
         verbose=True,
     )
-    mcmc_df.to_csv("footprints/XyAr_{}_mcmc_mpathic.csv".format(gene))
+    mcmc_df.to_csv("footprints/XyAr_{}_mcmc_mpathic2.csv".format(gene))
 
-pool = Pool(6)                         
+pool = Pool(2)                         
 pool.map(run, genes) 
