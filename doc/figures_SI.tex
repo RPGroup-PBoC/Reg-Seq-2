@@ -31,7 +31,15 @@
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{../figures/dicCp_mutation_rate_oligos.pdf}
+    \includegraphics[scale=1]{../figures/dicCp_mutation_rate_oligos.pdf}
     \caption{Mutation rate profile for the promoter of \textit{dicC}. Mutation rate per position (blue) with rolling average over 11 positions (orange) compared to expected average mutation rate of 0.1 (purple). Predicted repressor binding site indicated by grey vertical lines.}
     \label{fig:dicCp}
 \end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=1]{../figures/unique_bc_prom.pdf}
+    \caption{Number of unique mutated variants for each promoter after barcode mapping. Bars colored in purple indicate that a promoter was duplicated, i.e., there was a second promoter annotated to the same TSS in EcoCyc, for which 1500 variants were created as well, effectively doubling the number of mutated variants for the same promoter. Shown are promoter variants that could be mapped to at least 5 different barcodes.}
+    \label{fig:num_uniq_prom_var}
+  \end{figure}
