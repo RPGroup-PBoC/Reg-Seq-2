@@ -170,7 +170,7 @@ function joincols(df, column1::Union{Symbol, String}, column2::Union{Symbol, Str
                 push!(new_col, x)
             end
         elseif any(miss_arr)
-            push!(new_col, [x, y][miss_arr])
+            push!(new_col, [x, y][miss_arr][1])
         #elseif all(.~ miss_arr)
            # push!(new_col, missing)
         end

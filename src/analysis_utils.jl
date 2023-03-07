@@ -14,17 +14,16 @@ function expression_shift(_df; d=1)
     # Turn sequences into integer
     insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
     
+    freq_mat = frequency_matrix(df)
     # find wild type sequence 
     wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
     wt_seq = map(x -> x[2], wt_seq)
-    
+
     function is_mut(x)
         return x .!= wt_seq
     end
 
     insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter))
-
-
     mean_rel_counts = mean(df.relative_counts)
 
     ex_shift_arr = zeros(160)
@@ -37,23 +36,26 @@ end
 
 
 """
+    function mutual_information_bases(_df, nbins=4)
 
+Compute mutual information by binning relative counts and using all bases as variables.
 """
-function mutual_information(_df)
+function mutual_information_bases(_df, nbins=4)
     # Create copy
     df = copy(_df)
 
     # Compute relative (with pseudo counts)
     insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
-
-    f = fit(Histogram, log.(df.relative_counts), nbins=4)
+    #df = df[df.relative_counts .> 0.05, :]
+    f = fit(Histogram, log.(df.relative_counts))#, nbins=nbins)
+    #return f
     bins = f.edges[1] |> collect
     nbins = length(bins) - 1
 
     insertcols!(df, 1, :bin => map(x -> findfirst(y-> log(x) < y, bins) - 1, df.relative_counts))
     l = length(df.promoter[1])
     # bins, bases
-    p = zeros(l, nbins, 10)
+    p = zeros(l, nbins, 4)
 
     # bins
     for j in 1:l
@@ -62,9 +64,47 @@ function mutual_information(_df)
             p[j, key[1], DNA_dict[key[2]]] = counts[key]
         end
     end
-
     p = p ./ nrow(df)
     mut_information = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:nbins for k in 1:4]) for i in 1:l]
+    return mut_information
+end
+
+
+"""
+    function mutual_information_mutation(_df, nbins=4)
+
+Compute mutual information using RNA and DNA counts as well as mutated base indentity.
+"""
+function mutual_information_mutation(_df)
+    # Create copy
+    df = copy(_df)
+
+    # mu, m
+    l = length(df.promoter[1])
+    p = zeros(l, 2, 2)
+
+    # Turn sequences into integer
+    insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
+    freq_mat = frequency_matrix(df)
+
+    # find wild type sequence 
+    wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
+    wt_seq = map(x -> x[2], wt_seq)
+    
+    function is_mut(x)
+        return x .!= wt_seq
+    end
+
+    insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter))
+
+    for (j, seq) in enumerate(df.is_mutated)
+        for i in 1:l
+            p[i, 1, seq[i]+1] += df.ct_0[j]
+            p[i, 2, seq[i]+1] += df.ct_1[j]
+        end
+    end
+    p ./= sum(df.ct)
+    mut_information = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
 
     return mut_information
 end
@@ -123,6 +163,6 @@ function frequency_matrix(df)
     end
     # Normalize to get frequencies
     freq_mat ./= sum(df.ct)
-    
+
     return freq_mat
 end
