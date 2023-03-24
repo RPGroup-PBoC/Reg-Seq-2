@@ -63,7 +63,7 @@ function import_primer(index::Int, direction::String)
         record = open(FASTA.Reader, "/$path/data/reverse_finalprimers.fasta") do r
             collect(r)[index]
         end
-        return sequence(record) |> reverse_complement
+        return sequence(record) |> LongDNA{4}|> reverse_complement |> String
     else
         throw(ArgumentError("dir has to be either \"fwd\" or \"rev\""))
     end
