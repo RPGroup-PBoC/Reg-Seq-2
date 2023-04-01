@@ -24,9 +24,9 @@ def run(gene):
         modeltype='MAT',
         LS_means_std=None,
         db=db,
-        iteration=600000,
-        burnin=60000,
-        thin=60,
+        iteration=300000,
+        burnin=30000,
+        thin=30,
         runnum=0,
         initialize='rand',
         start=0,
@@ -39,7 +39,7 @@ def run(gene):
         drop_library=False,
         verbose=True,
     )
-    mcmc_df.to_csv("footprints/LB_{}_mcmc_mpathic2.csv".format(gene))
+    mcmc_df.to_csv("footprints/g260_{}_mcmc_mpathic2.csv".format(gene))
 
 pool = Pool(6)                         
 pool.map(run, genes) 
