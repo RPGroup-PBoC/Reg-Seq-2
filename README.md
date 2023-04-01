@@ -43,9 +43,19 @@ Subsequently, the environment needs to be activated in order to be used. This ca
 conda activate wgregseq
 ```
 
+For sequence processing we use [`fastp`](https://github.com/OpenGene/fastp) (version 0.23.2). This software is a command line tool that can be installed with conda. We provide a minimal conda environment called `fastp` which can be installed with 
+
+```
+conda env create -f fastp_environment.yml
+```
+
+from this directory.
+
 ### BBmap
 
 During processing of sequencing data, we use [bbmap](https://jgi.doe.gov/data-and-tools/software-tools/bbtools/bb-tools-user-guide/installation-guide/). It can be downloaded and used straight away. BBmap requires a working Java installation on the machine. Replace the `bbmap` folder in this repository with the unpacked folder that you downloaded for `bbmap`. `bbmap` requires a working Java installation, so make sure that you have one.
+
+
 
 ### Installation check
 

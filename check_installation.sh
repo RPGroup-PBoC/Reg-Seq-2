@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Check if fastp is installed
-conda list -n fastp_env fastp
+conda list -n fastp_env || conda list -n fastp
 
 # Check if bbmap is in the correct location
 FILE=./bbmap/bbmap.sh

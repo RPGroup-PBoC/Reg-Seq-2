@@ -118,9 +118,29 @@ function eval_emat(
             
     onehot_encoder(seq::BioSequences.LongDNA)
     encoded = onehot_encoder(seq)
-    
-    return sum(encoded .* _emat)
+    #return sum(encoded .* _emat)
 end
+
+
+function eval_emat(
+    sequence_list::Union{Vector{T1}, Vector{T2}}, 
+    emat::Matrix; 
+    start_ind_seq::Int64=1, 
+    stop_ind_seq::Int64=length(sequence_list[1]),
+    start_ind_emat::Int64=1,
+    stop_ind_emat::Int64=size(emat, 1)
+) where {T1<:BioSequences.LongDNA, T2<:AbstractString}
+    return [eval_emat(
+       x, 
+        emat; 
+        start_ind_seq=start_ind_seq, 
+        stop_ind_seq=stop_ind_seq,
+        start_ind_emat=start_ind_emat,
+        stop_ind_emat=stop_ind_emat
+    ) for x in sequence_list]
+end
+
+
 
 
 """
@@ -177,3 +197,7 @@ function joincols(df, column1::Union{Symbol, String}, column2::Union{Symbol, Str
     end
     return new_col
 end
+
+
+
+num_unique(x) = length(unique(x))

@@ -2,6 +2,12 @@ module wgregseq
 
 include("enzyme_list.jl")
 
+module utils
+include("utils.jl")
+export parse,num_unique
+end
+using .utils
+
 module promoter_finder
 include("promoter_finder.jl")
 end
@@ -19,13 +25,10 @@ module quality_control
 include("qc.jl")
 end
 
-module utils
-include("utils.jl")
-export parse
-end
 
-module analysis_utils
-include("analysis_utils.jl")
+
+module footprints
+include("footprints.jl")
 end
 
 

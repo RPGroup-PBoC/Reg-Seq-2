@@ -166,3 +166,17 @@ function frequency_matrix(df)
 
     return freq_mat
 end
+
+
+function mutual_information_add_model(p::Matrix)
+    p1 = sum(p, dims=1)
+    p2 = sum(p, dims=2)
+
+    return sum([clog(p[j, i], p1[i], p2[j]) for i in 1:length(p1) for j in 1:length(p2)])
+end
+
+
+function gauge_emat(emat)
+    #return emat = (emat .- mean(emat)) ./ std(emat)
+    return emat
+end
