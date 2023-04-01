@@ -306,3 +306,5 @@ bbmap/*
 **/figures/*
 doc/*
 code/analysis/2022114_barcode/footprints/*
+*.pdf
+code/analysis/2022114_barcode/data_files/*
