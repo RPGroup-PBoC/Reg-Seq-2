@@ -1,11 +1,11 @@
 using DataFrames, Statistics, StatsBase
 
 """
-    function expression_shift(_df; d=1)
+    function expression_shift(_df)
 
 Plot promoter footprint and add annotations for annotated sites.
 """
-function expression_shift(_df; d=1)
+function expression_shift(_df)
     # Create copy
     df = copy(_df)
 
