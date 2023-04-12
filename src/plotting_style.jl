@@ -86,3 +86,7 @@ function default_makie!()
     )
     set_theme!(theme)
 end
+
+
+sns_colorblind = ["#607794", "#946091", "#947d60", "#609463",
+    "#A7B5C9", "#C9A7C7", "#C9B9A7", "#A7C9A9"]

@@ -41,3 +41,25 @@ fi
         * ) echo "Please answer yes or no.";;
     esac
 }
+
+{ # try
+    parallel
+    echo "GNU parallel works"
+
+} || { 
+read -p "GNU parallel does not work! Do you want to install it.(Yy/Nn)" yn
+    case $yn in
+        [Yy]* ) {
+            brew install parallel && echo "greadlink should work now";
+        } || {
+            read -p "brew is not installed! Do you want to install it? (Yy/Nn)" yn
+            case $yn in
+                [Yy]* ) /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";brew install 'coreutils' && echo "greadlink should work now";;
+                [Nn]* ) echo "Not installing brew. Please make sure that greadlink works manually."; break;;
+                * ) echo "Please answer yes or no";;
+            esac
+        };;
+        [Nn]* ) echo "Please make sure that GNU parallel works.";;
+        * ) echo "Please answer yes or no.";;
+    esac
+}

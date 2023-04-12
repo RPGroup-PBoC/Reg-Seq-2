@@ -3,7 +3,7 @@
 # index for files
 group=${1:-110}
 
-
+# Find parent path
 PARENT_PATH=$(dirname $(greadlink -f $0))
 result=${PARENT_PATH##*/}
 
@@ -12,7 +12,8 @@ PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 
-#PARENT_PATH="/Volumes/rp_lab_ext/1000_genes_ecoli"
+# Set custom path if data is stored outside github repo
+PARENT_PATH="/Volumes/rp_lab_ext/1000_genes_ecoli"
 
 # Find data directory
 INFOLDER=$PARENT_PATH'/data/filtered_sequencing/'$result/
@@ -22,29 +23,34 @@ mkdir $PARENT_PATH'/data/extracted_pairs/'
 mkdir $PARENT_PATH'/data/extracted_pairs/'$result
 OUT_FOLDER=$PARENT_PATH'/data/extracted_pairs/'$result
 
-
+# Reset temp folder
 rm -rf $OUT_FOLDER'/temp/'
 mkdir $OUT_FOLDER'/temp/'
 
+# Command to combine barcodes and promoters
 command=paste
 for i in $INFOLDER*$group*.gz; do
     command="$command <(gunzip -cd $i)"
 done
-echo $command
 
-# split 
-eval $command | awk 'NR%4==2 {print $0}' > $OUT_FOLDER'/temp_file.txt'
-split -n 40 $OUT_FOLDER'/temp_file.txt' $OUT_FOLDER'/temp/small_chunk'
-rm $OUT_FOLDER'/temp_file.txt'
+echo "Splitting file...\n"
+# Split file into smaller chunks
+eval $command | awk 'NR%4==2 {print $0}' | parallel --pipe --block 1000M 'cat > '$OUT_FOLDER'/temp/small_chunk{#}'
+
+echo "Sorting Chunks...\n"
+# Sort each chunk separately
 for X in $OUT_FOLDER/temp/small_chunk*; do 
   filename="${X##*/}"
-  sort < $X > $OUT_FOLDER'/temp/sorted-'$filename;
+  sort --parallel=8 < $X > $OUT_FOLDER'/temp/sorted-'$filename;
+  rm $X
 done
 
-sort -m $OUT_FOLDER/temp/sorted-small_chunk* | uniq -c | awk '{
+echo "Combining chunks and saving fasta file...\n"
+# Combine sorted chunks and count unique occurences, store in fasta file
+sort -m --parallel=8 $OUT_FOLDER/temp/sorted-small_chunk* | uniq -c | awk '{
     print ">"$3"_"$1"\n"$2;
     print "";
-}' > $OUT_FOLDER'/'$group'_collapsed.fasta'
+}' | gzip > $OUT_FOLDER'/'$group'_collapsed.fasta.gz'
 
 
 rm -rf $OUT_FOLDER'/temp/'

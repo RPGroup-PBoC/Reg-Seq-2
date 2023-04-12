@@ -1,28 +1,5 @@
 #!/bin/bash
 
-############################################################
-# Process the input options.                               #
-############################################################
-# Get the options
-#while getopts ":hi:o:bn:" option; do
-#   case $option in
-#      h) # display Help
-#         Help
-#         exit;;
-#      i) # Input file or directory
-#         in_file=$OPTARG;;
-#      o) # Output directory
- #        out_dir=$OPTARG;;
-#      b) # input file is BAM format
- #        Name=$OPTARG;;
- #     n) # Enter a name
-#         Name=$OPTARG;;     
- #    \?) # Invalid option
- #        echo "Error: Invalid option"
-#         exit;;
-#   esac
-#done
-
 # Group number
 group=${1:-110}
 
@@ -30,58 +7,57 @@ group=${1:-110}
 
 PARENT_PATH=$(dirname $(greadlink -f $0))
 result="${PARENT_PATH##*/}"
-echo $result
 
 # Go back path
 PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 
-# Find data directory
-processing_folder=$PARENT_PATH'/data/processed_promoters/'$result
-sam_file=$processing_folder'/'$group'_collapsed.sam'
-
+# find bbmap path
 BBMAP_PATH=$(find $PARENT_PATH -name "bbmap.sh")
 
-# Make directories for stored data
+# Custom path to data if not stored in repo
+PARENT_PATH="/Volumes/rp_lab_ext/1000_genes_ecoli"
+
+# Find data directory
+processing_folder=$PARENT_PATH'/data/extracted_pairs/'$result
+sam_file=$processing_folder'/'$group'_collapsed.sam'
+
+
+
+# Test if output directory exists already
 out_dir=$PARENT_PATH'/data/barcodes/'$result'/'$group'_per_gene'
 if [ -d $out_dir ] 
 then
     echo $out_dir" exists"
-else 
-    mkdir $out_dir
+    read -p "Output directory already exists. Do you want to remove it before proceeding?.(Yy/Nn)" yn
+    case $yn in
+        [Yy]* ) rm -rf $out_dir && echo "Output directory reset";;
+        [Nn]* ) echo "Please move Output directory manually and run script again.";;
+        * ) echo "Please answer yes[Yy] or no[Nn].";;
+    esac
 fi
+mkdir $out_dir
 
-echo $BBMAP_PATH
 
+# Run BB
 $BBMAP_PATH ref=$PARENT_PATH'/data/wt_sequences.fasta' path=$processing_folder
-echo $processing_folder/$group'_collapsed.fasta'
+gunzip -c $processing_folder/$group'_collapsed.fasta.gz' > $processing_folder/$group'_collapsed.fasta'
 $BBMAP_PATH ambiguous='best' indelfilter='0' nfilter='0' minid='0.85' trimreaddescriptions='t' in=$processing_folder/$group'_collapsed.fasta' out=$sam_file t='8' path=$processing_folder
 
+rm -f $processing_folder/$group'_collapsed.fasta'
 
 # Start the process
-start=$SECONDS
+START=$SECONDS
 
 # Input file name
-echo $out_dir
-echo "Assigning gene names to promoter-barcode pairs..."
+echo "Assigning gene names to promoter-barcode pairs...\n"
 
 # Extract promoter-bc pairs and corresponding gene names
 awk -v o="$out_dir" 'BEGIN{FS="\t";OFS = ","} !(NR%500000){print NR " Promoters Processed"}; NF>10{gsub(/_/, ",", $1); print $10,$1,$3 >> (o"/"$3"_barcodes.txt")}' "$sam_file"
 
 # terminal output message
-#echo "All Promoters Processed, now adding headers..."
-#
-# Loop through output directory and add a header to each file
-#cd $out_dir
-#echo "promoter,barcode,counts,name" > headerfile
-#for file in *barcodes.txt; do cat headerfile $file > tmpfile2; mv tmpfile2 "$file"; done
-
-#rm headerfile
-
-# terminal output message
-echo "done! Output files written to " "$out_dir"
-end=$SECONDS
-duration=$(( end - start ))
-echo
-echo "time elapsed: $duration seconds"
+echo "done! Output files written to " "$out_dir\n"
+END=$SECONDS
+DURATION=$(( END - START ))
+echo "time elapsed: $DURATION seconds"

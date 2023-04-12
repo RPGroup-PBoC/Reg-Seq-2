@@ -9,7 +9,7 @@ PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 PARENT_PATH=${PARENT_PATH%/*}
 
-#PARENT_PATH="/Volumes/rp_lab_ext/1000_genes_ecoli"
+PARENT_PATH="/Volumes/rp_lab_ext/1000_genes_ecoli"
 
 # Data FOLDER
 FOLDER=$PARENT_PATH'/data/sequencing/'$RESULT
