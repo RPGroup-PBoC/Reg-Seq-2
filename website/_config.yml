@@ -1,0 +1,27 @@
+title: Reg-Seq
+description: > 
+  High-Throughput Discovery of Regulatory Architectures in E. Coli
+
+data_url: "http://rpdata.caltech.edu/courses/course_name/course_year/"
+
+
+# You can include a logo for your work as a .png that is saved in the folder 
+social-github: RPGroup-PBoC # add your Github handle here.
+# author-img: logo.png # Comment this line out if you don't want a logo. if
+                     # absent, text will replace the logo postition.
+
+
+
+# ------------------------------------------------------------------------------
+# Below settings make the website work. Do not modify unless you know what you
+# are doing.
+# ------------------------------------------------------------------------------
+markdown: kramdown
+plugins:
+  - jekyll-sitemap
+  - jekyll-paginate
+  - jemoji
+
+# Files to exclude from the website build. You may not want to include all data
+# files for example.
+exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock", "data_files"]
