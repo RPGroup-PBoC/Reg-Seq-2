@@ -121,7 +121,7 @@ function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequenc
     if strand == "-"
         gene = genome[TSS-dn:TSS+up-1]
     
-        outgene = LongDNA{4}(gene) |> reverse_complement
+        outgene = gene |> reverse_complement
         
         left_pos = TSS-dn
         right_pos = TSS+up
@@ -133,9 +133,17 @@ function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome::BioSequenc
     else
         throw(ArgumentError("`strand` has to be either \"+\" or \"-\""))
     end
+    
     return (outgene, left_pos, right_pos)
 end
 
+
+
+function find_seq(TSS::Int, strand::String, up::Int, dn::Int, genome:: String)
+    temp = LongDNA{4}(genome)
+    out = find_seq(TSS, strand, up, dn, temp) 
+    return string(out[1]), out[2], out[3]
+end
 
 
 function _random_mutation_generator(sequence, rate)::Array{Tuple{Int, Int}, 1}
@@ -381,3 +389,101 @@ function check_primers_re_sites(enz1, enz2, primer, direction)
     end
     return primer
 end
+
+
+"""
+    function mass_spec_oligo(seq, positions, IDT=false)
+
+Design oligos that can be used for DNA chromotography. A given sequence of random
+bases and a PstI restriction site at the 5' of the sense oligo. A tag can be added
+that IDT recignizes as a Biotin tag at the 5' end. Returns table of sequences.
+
+# Parameters
+------------
+- seq: DNA sequence that contains binding site as well as wild type bases at each end
+- positions: Bases in the DNA sequence to be mutated for the control
+- restriction_site: Enzyme whose cut site is added to the oligo, default `PstI`
+- IDT: If `true`, add biotin tag at 5' end that is recognized by IDT. Also changes output to string that can be used as Bulk Input.
+
+# Returns
+----------
+
+"""
+function mass_spec_oligo(seq::Union{String, LongDNA}, positions::Vector{Int};restriction_site::String="PstI", IDT::Bool=false, name::String=nothing)
+    
+    if typeof(seq) == LongSequence{DNAAlphabet{4}}
+        seq = string(seq)
+    end
+
+    # Biotin label
+    biotin = "/5Biosg/"
+
+    # Restriction site
+    cut_site = enzyme_list[enzyme_list.enzyme.==restriction_site, "site"][1]
+    
+    # Spacer sequence flanking cut site
+    spacer = "ctagct"
+    
+    # Adapter sequence of cut site and spacers
+    adapt = spacer * cut_site * spacer
+
+    # Mutated sense oligo
+    mutated_seq = copy(collect(seq))
+    for pos in positions
+        mutated_seq[pos] = sample(filter(x -> x != mutated_seq[pos], ['A', 'C', 'G', 'T']))
+    end
+
+    # Sense sequences
+    sense_bind = adapt * seq
+    sense_mutated = adapt * join(mutated_seq)
+   
+    # Antisense sequences
+    antisense_bind = reverse_complement(LongDNA{4}(sense_bind)) |> string
+    antisense_mutated = reverse_complement(LongDNA{4}(sense_mutated)) |> string
+
+    if IDT
+        sense_bind = biotin * sense_bind
+        sense_mutated = biotin * sense_mutated
+    end
+
+    # Dictionary containing sequences
+    if isnothing(name)
+        return_dict = Dict(
+            "sense binding" => sense_bind, 
+            "antisense binding" => antisense_bind,
+            "sense mutated" => sense_mutated,
+            "antisense mutated" => antisense_mutated
+        )
+    else
+        return_dict = Dict(
+            "$(name)_binding" => sense_bind, 
+            "$(name)_antisense_binding" => antisense_bind,
+            "$(name)_mutated" => sense_mutated,
+            "$(name)_antisense_mutated" => antisense_mutated
+        )
+    end
+    
+    # Add biotin tags and write output in format for IDT
+    if IDT
+        if length(antisense_bind) <= 60
+            mol = "25nm"
+        elseif length(antisense_bind) <= 90
+            mol = "100nm"
+        elseif length(antisense_bind) <= 100
+            mol = "250nm"
+        else
+            return ErrorException("Oligos have length of $(length(antisense_bind)), but can only by 100bp long.")
+        end
+        output = ""
+        for i in collect(keys(return_dict))
+            output *= "$i,$(return_dict[i]),$mol,STD\n"
+        end
+
+        return println(output)
+    else
+        return return_dict
+    end
+end
+
+# Take array of letters as input
+mass_spec_oligo(seq::Vector{Char}, positions::Vector{Int};restriction_site::String="PstI", IDT::Bool=false, name::String=nothing) = mass_spec_oligo(join(seq), positions, IDT=IDT, restriction_site=restriction_site, name=name)

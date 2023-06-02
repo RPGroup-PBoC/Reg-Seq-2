@@ -16,6 +16,9 @@ my_color_dict = Dict(
     "purple1" => "#9f2260",
     "purple2" => "#cca6b6",
     "purple3" => "#e9d1da",
+    "red1" => "#D14241",
+    "red2" => "#E59C8C",
+    "red3" => "#F0CABF"
     )
 
 

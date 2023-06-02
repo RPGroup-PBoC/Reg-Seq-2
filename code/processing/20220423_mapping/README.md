@@ -5,7 +5,8 @@ status: Rejected
 # 2022-04-23 Sequencing run
 
 ## Purpose
-This sequencing run was a test run for a larger NextSeq run to confirm that our custom primers work as expected.
+Mapping run for 119 promoters.
+
 ## Platform
 NextSeq (Caltech Sequencing facility)
 

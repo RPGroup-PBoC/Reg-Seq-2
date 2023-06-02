@@ -112,6 +112,7 @@ end
 
 # transform sequences to integers
 DNA_dict = Dict('A' => 1, 'C' => 2, 'G' => 3, 'T' => 4)
+DNA_dict_rev = Dict(1 => 'A', 2 => 'C', 3 => 'G',4 => 'T')
 
 
 """

@@ -319,6 +319,8 @@ function (p::Promoter_Calculator)(sequence::BioSequences.LongDNA{4}, TSS_range::
     return output
 end
 
+(p::Promoter_Calculator)(sequence::String, TSS_range::Tuple{Int64, Int64}=(-1, -1)) = (p::Promoter_Calculator)(BioSequences.LongDNA{4}(sequence), TSS_range)
+
 
 function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA{4}, TSS_range::Tuple{Int64, Int64})
     UPS_length = 24
@@ -401,3 +403,4 @@ function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA{4}, TSS_
     return (Min_States, All_States)
 end
 
+predict(p::Promoter_Calculator, sequence::String, TSS_range::Tuple{Int64, Int64}) = predict(p::Promoter_Calculator, BioSequences.LongDNA{4}(sequence), TSS_range)
