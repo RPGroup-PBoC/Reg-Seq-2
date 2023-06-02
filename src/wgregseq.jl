@@ -4,7 +4,7 @@ include("enzyme_list.jl")
 
 module utils
 include("utils.jl")
-export parse,num_unique
+export parse,num_unique,convert
 end
 using .utils
 

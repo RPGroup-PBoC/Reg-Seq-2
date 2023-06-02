@@ -1,4 +1,10 @@
 using BioSequences, CSV, DataFrames
+import BioSequences.reverese_complement
+
+Base.convert(::Type{String}, x::BioSequences.LongSequence{DNAAlphabet{4}}) = string(x)
+Base.convert(::Type{BioSequences.LongDNA}, x::String) = LongDNA{4}(x)
+
+BioSequences.reverse_complement(x::String) = string(reverse_complement(LongDNA{4}(x)))
 
 # Define custom function for nice imports
 Base.parse(::Type{Vector{String}}, x::String) = Vector{String}(filter(x-> x != ", ", split(x, "\""))[2:end-1])
