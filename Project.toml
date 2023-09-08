@@ -4,13 +4,13 @@ authors = ["Tom Roeschinger <troeschi@caltech.edu>"]
 version = "0.1.0"
 
 [deps]
-AffyCelFiles = "efc83544-1c47-49f8-8867-17a7f6cc0942"
 BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Distances = "b4f34e82-e78d-54a5-968a-f98e89d6e8f7"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 FASTX = "c2308a5c-f048-11e8-3e8a-31650f418d12"
 GLM = "38e38edf-8417-5370-95a0-9cbb8c7f171a"

@@ -1,4 +1,5 @@
 using DataFrames, Statistics, StatsBase
+using ..wgregseq: utils.onehot_encoder
 
 """
     function expression_shift(_df)
@@ -81,31 +82,50 @@ function mutual_information_mutation(_df)
 
     # mu, m
     l = length(df.promoter[1])
-    p = zeros(l, 2, 2)
 
     # Turn sequences into integer
-    insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
-    freq_mat = frequency_matrix(df)
-
-    # find wild type sequence 
-    wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
-    wt_seq = map(x -> x[2], wt_seq)
-    
-    function is_mut(x)
-        return x .!= wt_seq
+    if "int_promoter" ∉ names(df)
+        insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
     end
 
-    insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter))
+    if "int_wt" ∉ names(df)
+        insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]))
+    end
+    if :wt_seq ∉ names(df)
+        freq_mat = frequency_matrix(df)[1]
+        # find wild type sequence 
+        wt_seq = argmax(freq_mat, dims=2) |> vec
+        wt_seq = map(x -> x[2], wt_seq)
 
-    for (j, seq) in enumerate(df.is_mutated)
-        for i in 1:l
-            p[i, 1, seq[i]+1] += df.ct_0[j]
-            p[i, 2, seq[i]+1] += df.ct_1[j]
+        function is_mut(x)
+            return x .!= wt_seq
         end
-    end
-    p ./= sum(df.ct)
-    mut_information = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
 
+        insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter))
+    else
+        function is_mut(x, y)
+            return x .!= y
+        end
+        insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter, df.int_wt))
+    end
+
+    # initiate distribution
+    p = zeros(l, 2, 2)
+    
+    # helper function for broadcasting
+    s(x) = .~(x)
+
+    p[:, 1, 2] = sum(df.is_mutated .* df.ct_0, dims=1)[1]
+    p[:, 1, 1] = sum( s.(df.is_mutated) .* df.ct_0, dims=1)[1]
+    p[:, 2, 2] = sum(df.is_mutated .* df.ct_1, dims=1)[1]
+    p[:, 2, 1] = sum(s.(df.is_mutated) .* df.ct_1, dims=1)[1]
+
+    # normalize
+    p ./= sum(df.ct)
+
+    # compute mutual information
+    mut_information = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
+    
     return mut_information
 end
 
@@ -146,6 +166,7 @@ Compute frequency matrix for dataframe containing RNA and DNA counts
 for sequences in integer format.
 """
 function frequency_matrix(df)
+    #=
     # Create matrix to store frequencies
     freq_mat = zeros(2, 4, 160)
 
@@ -164,8 +185,10 @@ function frequency_matrix(df)
     end
     # Normalize to get frequencies
     freq_mat ./= sum(df.ct)
-
-    return freq_mat
+    =#
+    ct_0 = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_0]) / sum(df[!, :ct])
+    ct_1 = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_1]) / sum(df[!, :ct])
+    return ct_0, ct_1
 end
 
 

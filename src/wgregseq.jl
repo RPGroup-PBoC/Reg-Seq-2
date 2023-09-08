@@ -25,8 +25,6 @@ module quality_control
 include("qc.jl")
 end
 
-
-
 module footprints
 include("footprints.jl")
 end

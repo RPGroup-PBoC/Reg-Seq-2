@@ -263,7 +263,6 @@ end
 
 
 
-
 struct Promoter_Calculator
     model
     inters
