@@ -1,4 +1,11 @@
-using DataFrames, Statistics, StatsBase
+using DataFrames, Statistics, StatsBase, LinearAlgebra
+import AbstractMCMC
+import StatsBase
+using Distributions
+using Random
+import MCMCChains
+using KernelDensity
+using SparseArrays
 using ..wgregseq: utils.onehot_encoder
 
 """
@@ -191,7 +198,12 @@ function frequency_matrix(df)
     return ct_0, ct_1
 end
 
+"""
+    function mutual_information_add_model(p::Matrix)
 
+Compute mutual information for joint probability distribution of two random
+variables.
+"""
 function mutual_information_add_model(p::Matrix)
     p1 = sum(p, dims=1)
     p2 = sum(p, dims=2)
@@ -199,8 +211,281 @@ function mutual_information_add_model(p::Matrix)
     return sum([clog(p[j, i], p1[i], p2[j]) for i in 1:length(p1) for j in 1:length(p2)])
 end
 
+"""
+    function gauge_emat(emat)
 
+Apply gauge to matrix. Each column sums to zero and total matrix norm
+is 1.
+"""
 function gauge_emat(emat)
-    #return emat = (emat .- mean(emat)) ./ std(emat)
+    emat = emat .- sum(emat, dims=1) / 4
+    emat = emat ./ norm(emat)
     return emat
+end
+
+
+"""
+    mutable struct MetropolisHastings{T, D, C} <: AbstractMCMC.AbstractSampler
+
+Sampler construct. Contains initial parameter guess, proposal distribution and variance of
+proposal distribution.
+"""
+mutable struct MetropolisHastings{T, D, C} <: AbstractMCMC.AbstractSampler 
+    init_θ::T
+    proposal::D
+    sigma::C
+end
+MetropolisHastings(init_θ::Matrix{<:Real}) = MetropolisHastings(init_θ, reshape(MvNormal(zero(vec(init_θ)), I), 4, 160), 1.)
+
+"""
+    struct DensityModel{F<:Function} <: AbstractMCMC.AbstractModel
+
+Model construct. Contains density function, sequences in One-Hot code, and count indentity array.
+"""
+struct DensityModel{F<:Function} <: AbstractMCMC.AbstractModel
+    ℓπ::F
+    mu_arr::AbstractArray
+    seq_mat
+end
+
+
+"""
+    struct Transition{T, L}
+
+Transition construct. Created at each step, contains parameter and log-probability.
+"""
+struct Transition{T, L}
+    θ::T
+    lp::L
+end
+Transition(model::DensityModel, θ) = Transition(θ, ℓπ(model, θ))
+
+"""
+    function AbstractMCMC.step(
+        rng::AbstractRNG,
+        model::DensityModel,
+        spl::MetropolisHastings,
+        kwargs...
+    )  
+
+Initial step function. Returns transition with initial guess.
+"""
+function AbstractMCMC.step(
+    rng::AbstractRNG,
+    model::DensityModel,
+    spl::MetropolisHastings,
+    kwargs...
+)   
+    return Transition(model, spl.init_θ), spl
+end
+
+
+"""
+    function AbstractMCMC.step(
+        rng::AbstractRNG,
+        model::DensityModel,
+        spl::MetropolisHastings,
+        θ_prev_T::Transition,
+        ;
+        kwargs...
+    ) 
+
+Step function. Guesses new step and computes density at new proposal. Compute acceptance
+probability and return new Transition if step is acceptence. Return previous transition
+otherwise.
+"""
+function AbstractMCMC.step(
+    rng::AbstractRNG,
+    model::DensityModel,
+    spl::MetropolisHastings,
+    θ_prev_T::Transition,
+    ;
+    kwargs...
+)
+    # Generate a new proposal.
+    θ_T = propose(spl, model, θ_prev_T)
+    # Calculate the log acceptance probability.
+    α = ℓπ(model, θ_T) - ℓπ(model, θ_prev_T) + q(spl, θ_prev_T, θ_T) - q(spl, θ_T, θ_prev_T)
+
+    # Decide whether to return the previous θ or the new one.
+    #if log(rand(rng)) < min(α, 0.0)
+    if log(rand(rng)) < min(α, 0.0)
+        return θ_T, spl, true
+    else
+        return θ_prev_T, spl, false
+    end
+end
+
+# Define a function that makes a basic proposal depending on a univariate
+# parameterization or a multivariate parameterization.
+propose(spl::MetropolisHastings, model::DensityModel, θ::Matrix{<:Real}) = 
+    Transition(model, gauge_emat(θ + rand(spl.proposal)))
+propose(spl::MetropolisHastings, model::DensityModel, t::Transition) =
+    propose(spl, model, t.θ)
+
+# Calculates the probability `q(θ|θcond)`, using the proposal distribution `spl.proposal`.
+q(spl::MetropolisHastings, θ::Matrix{<:Real}, θcond::Matrix{<:Real}) =
+    logpdf(spl.proposal, θ - θcond)
+q(spl::MetropolisHastings, t1::Transition, t2::Transition) = q(spl, t1.θ, t2.θ)
+
+# Calculate the density of the model given some parameterization.
+ℓπ(model::DensityModel, θ) = model.ℓπ(model.seq_mat, model.mu_arr, θ)
+ℓπ(model::DensityModel, T::Transition) = model.ℓπ(model.seq_mat, model.mu_arr, T.θ)
+
+
+"""
+    function density(seq_mat, mu::Vector{Float64}, θ::Matrix{Float64})
+
+Compute kerned density estimation for additive model and count indentities. Compute
+mutual information given KDE.
+"""
+function density(seq_mat, mu::Vector{Float64}, θ::Matrix{Float64})
+    en = (seq_mat * vec(θ))
+    y = kde((en, mu), npoints=(10, 512))
+    y.density ./= sum(y.density)
+    return mutual_information_add_model(y.density)
+end
+
+
+"""
+    function AbstractMCMC.bundle_samples(
+        ℓ::DensityModel, 
+        s::MetropolisHastings, 
+        N::Integer, 
+        ts::Vector{<:Transition},
+        chain_type::Type{Any};
+        param_names=missing,
+        kwargs...
+    )
+
+Bundle samples into array given an array of transitions.
+"""
+function AbstractMCMC.bundle_samples(
+    ts::Vector{<:Transition},
+    param_names=missing,
+    kwargs...
+)
+    # Turn all the transitions into a vector-of-vectors.
+    vals = copy(reduce(hcat,[vcat(vec(t.θ), t.lp) for t in ts])')
+
+    # Check if we received any parameter names.
+    if ismissing(param_names)
+        param_names = ["Parameter $i" for i in 1:(length(first(vals))-1)]
+    end
+
+    # Add the log density field to the parameter names.
+    push!(param_names, "lp")
+
+    # Bundle everything up and return a Chains struct.
+    return vals, param_names
+end
+
+
+"""
+    function adapt_sigma(rate)
+
+Adapt variance of proposal distribution given current acceptance rate. Taken from PyMC3.
+"""
+function adapt_sigma(rate)
+    if rate < 0.001
+        return 0.1
+    elseif rate < 0.05
+        return 0.5
+    elseif rate < 0.2 
+        return 0.9
+    elseif rate > 0.5
+        return 1.1
+    elseif rate > 0.75
+        return 2
+    elseif rate > 0.95
+        return 10
+    else
+        return 1
+    end
+end
+
+
+"""
+    function StatsBase.sample(
+        model::AbstractMCMC.AbstractModel,
+        sampler::AbstractMCMC.AbstractSampler,
+        nsamples::Integer,
+        seq_mat,
+        rng::Random.AbstractRNG=Random.default_rng(),
+        adapt_steps::Integer=1000,
+        ;
+        kwargs...
+    )
+
+Sample function. Takes model and sampler constructs. 
+"""
+function StatsBase.sample(
+    model::AbstractMCMC.AbstractModel,
+    sampler::AbstractMCMC.AbstractSampler,
+    nsamples::Integer,
+    seq_mat,
+    rng::Random.AbstractRNG=Random.default_rng(),
+    adapt_steps::Integer=1000,
+    ;
+    kwargs...
+)
+    # Obtain the initial sample and state.
+    sample, sampler = AbstractMCMC.step(rng, model, sampler; kwargs...)
+
+    ## Save the sample.
+    samples = AbstractMCMC.samples(sample, model, sampler, nsamples; kwargs...)
+    samples = AbstractMCMC.save!!(samples, sample, 1, model, sampler, nsamples; kwargs...)
+    # Step through the sampler.
+    acceptance = 0
+    for i in 2:nsamples
+        # Obtain the next sample and state.
+        sample, sampler, accept = AbstractMCMC.step(rng, model, sampler, sample; kwargs...)
+        acceptance += accept
+        # Save the sample.
+        samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
+        if i%adapt_steps == 0
+            println("$i of $nsamples done.")
+            laptimer()
+            sampler.sigma *= adapt_sigma(acceptance/adapt_steps)
+            acceptance = 0
+            sampler.proposal = reshape(MvNormal(zeros(640), I * sampler.sigma), 4, 160)
+        end
+    end
+
+    return AbstractMCMC.bundle_samples(model, sampler, nsamples, samples, Any; kwargs...)
+end
+
+
+"""
+    function run_mcmc(
+        seq_mat,
+        mu;
+        warmup_steps=50000,
+        iter_steps=450000,
+        density=density,
+        )
+
+Run MCMC on dataset.
+"""
+function run_mcmc(
+    seq_mat,
+    mu;
+    warmup_steps=50000,
+    iter_steps=450000,
+    density=density,
+    )
+
+    total_steps = warmup_steps + iter_steps
+
+    # Construct a DensityModel.
+    model = DensityModel(density, mu, seq_mat)
+
+    # Set up our sampler with initial parameters.
+    spl = MetropolisHastings(randn(4, 160))
+
+    # Run sampler
+    chain = StatsBase.sample(model, spl, total_steps, seq_mat)
+
+    # Return parameters
+    x = reshape(mean(chain[1][warmup_steps:total_steps, 1:640], dims=1), 4, 160)
 end
