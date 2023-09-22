@@ -1,74 +1,39 @@
-using wgregseq, CSV, DataFrames, CairoMakie, SparseArrays
+using wgregseq, CSV, DataFrames, SparseArrays, Distributed, SharedArrays
+addprocs(6)
 
-wgregseq.plotting_style.default_makie!()
 
 
-df_map = CSV.read(
-    "../../../data/barcodes/20220514_mapping/mapped_barcodes.csv", 
-    DataFrame, 
-);
-
-# Filter out unnannotad sequences
-df_map = df_map[df_map.name .!= "*", :]
-
-# Filter out non-unique barcodes
-gdf = groupby(df_map[(df_map.map_count .> 2), :], :barcode)
-_df = DataFrame()
-for df in gdf
-    if nrow(df) == 1
-        append!(_df, df)
+@everywhere begin
+    function get_data(df)
+        seq_vec_0 = vcat([fill(i, df.ct_0[i]) for i in 1:nrow(df)]...)
+        mu0 = fill(0, length(seq_vec_0))
+    
+        seq_vec_1 = vcat([fill(i, df.ct_1[i]) for i in 1:nrow(df)]...)
+        mu1 = fill(1, length(seq_vec_1))
+    
+        mu = vcat(mu0, mu1)
+        mu = log10.((df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+        seq_mat = sparse(vcat([vcat(wgregseq.utils.onehot_encoder.(seq)'...)' for seq in df.promoter]...));
+        return seq_mat, mu
+    end
+    using wgregseq, CSV, DataFrames, SparseArrays, DelimitedFiles, SharedArrays
+    
+    function run_mcmc(df, i)
+        prom = df.name[1]
+        # get dataset
+        # transform dataset
+        seq_mat, mu = get_data(df)
+        mat = wgregseq.footprints.run_mcmc(seq_mat, mu, warmup_steps=50000, sample_steps=50000, thin=100)
+        writedlm("/Users/tomroeschinger/git/1000_genes_ecoli/code/analysis/20230907_barcode/mcmc_results/$(prom)_$(i)_mcmc.txt", mat)
+        return mat
     end
 end
-df_map = copy(_df);
+    
 
-# Get twist order to get wild type sequences
-df_seqs = wgregseq.utils.import_twist_order("../../../data/twist_orders/2022-02-15_twist_order.csv")
-df_wt = df_seqs[1:1501:119*1501, :];
-insertcols!(df_wt, 4, :promoter_seq => [string(x[27:186]) for x in df_wt.sequence])
-
-df_wt.promoter_seq |> unique |> length
-df_map = leftjoin(df_map, rename(df_wt[!, [:promoter, :promoter_seq]], :promoter => :name), on="name")
-rename!(df_map, :promoter_seq => :wt_seq)
-
-
-function get_dataset(i)
-    df_DNA = CSV.read(
-        "../../../data/extracted_barcodes/20230907_barcode/D$(i)_collapsed.txt", 
-        DataFrame, 
-        ignorerepeated=true, 
-        delim=" ", 
-        header=["ct_0", "barcode"]
-    )
-    # import RNA
-    df_RNA = CSV.read(
-        "../../../data/extracted_barcodes/20230907_barcode/R$(i)_collapsed.txt", 
-        DataFrame, 
-        ignorerepeated=true, 
-        delim=" ", 
-        header=["ct_1", "barcode"]
-    )
-    
-    # merge DNA and RNA reads
-    df = outerjoin(df_DNA, df_RNA, on=:barcode)
-    
-    # replace missing reads with 0
-    replace!(df.ct_0, missing => 0)
-    replace!(df.ct_1, missing => 0)
-    
-    # identify promoter sequences
-    df = innerjoin(df, df_map, on=:barcode)
-    
-    # compute total counts
-    insertcols!(df, 1, :ct => df.ct_0 .+ df.ct_1)
-    insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
-    
-    # Turn sequences into integer
-    insertcols!(df, 3, :int_promoter => wgregseq.footprints.make_int.(df[:, :promoter]))
-    insertcols!(df, 3, :int_wt => wgregseq.footprints.make_int.(df[:, :wt_seq]));
-    return df
+for i in [1]#[1, 2, 3, 5, 6, 7, 10, 12, 13]
+    _df = CSV.read("../../../data/extracted_barcodes/20230907_barcode/$(i)_collapsed.txt", DataFrame)
+    gdf = groupby(_df, :name)
+    @sync @distributed for _df in gdf
+        run_mcmc(_df, i)
+    end
 end
-
-genes = df_map.name |> unique
-gcs = [1, 2, 3, 5, 6, 7, 10, 12, 13]
-
-println(genes)

@@ -424,9 +424,10 @@ function StatsBase.sample(
     sampler::AbstractMCMC.AbstractSampler,
     nsamples::Integer,
     seq_mat,
+    ;
     rng::Random.AbstractRNG=Random.default_rng(),
     adapt_steps::Integer=1000,
-    ;
+    thin::Integer=100,
     kwargs...
 )
     # Obtain the initial sample and state.
@@ -442,17 +443,18 @@ function StatsBase.sample(
         sample, sampler, accept = AbstractMCMC.step(rng, model, sampler, sample; kwargs...)
         acceptance += accept
         # Save the sample.
-        samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
+        if i%thin == 0
+            samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
+        end
         if i%adapt_steps == 0
             println("$i of $nsamples done.")
-            laptimer()
             sampler.sigma *= adapt_sigma(acceptance/adapt_steps)
             acceptance = 0
             sampler.proposal = reshape(MvNormal(zeros(640), I * sampler.sigma), 4, 160)
         end
     end
 
-    return AbstractMCMC.bundle_samples(model, sampler, nsamples, samples, Any; kwargs...)
+    return AbstractMCMC.bundle_samples(samples; kwargs...)
 end
 
 
@@ -461,7 +463,7 @@ end
         seq_mat,
         mu;
         warmup_steps=50000,
-        iter_steps=450000,
+        sample_steps=450000,
         density=density,
         )
 
@@ -471,11 +473,17 @@ function run_mcmc(
     seq_mat,
     mu;
     warmup_steps=50000,
-    iter_steps=450000,
+    sample_steps=450000,
     density=density,
+    thin=100
     )
+    if warmup_steps%thin != 0
+        throw(ArgumentError("Give warmup steps as multiple of thin."))
+    elseif sample_steps%thin != 0
+        throw(ArgumentError("Give iter steps as multiple of thin."))
+    end
 
-    total_steps = warmup_steps + iter_steps
+    total_steps = warmup_steps + sample_steps
 
     # Construct a DensityModel.
     model = DensityModel(density, mu, seq_mat)
@@ -484,8 +492,8 @@ function run_mcmc(
     spl = MetropolisHastings(randn(4, 160))
 
     # Run sampler
-    chain = StatsBase.sample(model, spl, total_steps, seq_mat)
+    chain = StatsBase.sample(model, spl, total_steps, seq_mat, thin=thin)
 
     # Return parameters
-    x = reshape(mean(chain[1][warmup_steps:total_steps, 1:640], dims=1), 4, 160)
+    x = reshape(mean(chain[1][Int64(warmup_steps/thin):Int64(total_steps/thin), 1:640], dims=1), 4, 160)
 end
