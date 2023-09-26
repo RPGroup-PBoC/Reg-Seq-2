@@ -237,6 +237,7 @@ mutable struct MetropolisHastings{T, D, C} <: AbstractMCMC.AbstractSampler
 end
 MetropolisHastings(init_θ::Matrix{<:Real}) = MetropolisHastings(init_θ, reshape(MvNormal(zero(vec(init_θ)), I), 4, 160), 1.)
 
+
 """
     struct DensityModel{F<:Function} <: AbstractMCMC.AbstractModel
 
@@ -259,6 +260,7 @@ struct Transition{T, L}
     lp::L
 end
 Transition(model::DensityModel, θ) = Transition(θ, ℓπ(model, θ))
+
 
 """
     function AbstractMCMC.step(
@@ -316,6 +318,7 @@ function AbstractMCMC.step(
     end
 end
 
+
 # Define a function that makes a basic proposal depending on a univariate
 # parameterization or a multivariate parameterization.
 propose(spl::MetropolisHastings, model::DensityModel, θ::Matrix{<:Real}) = 
@@ -343,7 +346,7 @@ function density(seq_mat, mu::Vector{Float64}, θ::Matrix{Float64})
     en = (seq_mat * vec(θ))
     y = kde((en, mu), npoints=(10, 512))
     y.density ./= sum(y.density)
-    return mutual_information_add_model(y.density)
+    return mutual_information_add_model(y.density) * 100000
 end
 
 
@@ -445,9 +448,12 @@ function StatsBase.sample(
         # Save the sample.
         if i%thin == 0
             samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
+            println(density(seq_mat, model.mu_arr, sample.θ))
+        end
+        if i%1000 ==0
+            println("$i of $nsamples done.")
         end
         if i%adapt_steps == 0
-            println("$i of $nsamples done.")
             sampler.sigma *= adapt_sigma(acceptance/adapt_steps)
             acceptance = 0
             sampler.proposal = reshape(MvNormal(zeros(640), I * sampler.sigma), 4, 160)
@@ -475,7 +481,8 @@ function run_mcmc(
     warmup_steps=50000,
     sample_steps=450000,
     density=density,
-    thin=100
+    thin=100,
+    adapt_steps=1000
     )
     if warmup_steps%thin != 0
         throw(ArgumentError("Give warmup steps as multiple of thin."))
@@ -492,7 +499,7 @@ function run_mcmc(
     spl = MetropolisHastings(randn(4, 160))
 
     # Run sampler
-    chain = StatsBase.sample(model, spl, total_steps, seq_mat, thin=thin)
+    chain = StatsBase.sample(model, spl, total_steps, seq_mat, thin=thin, adapt_steps=adapt_steps)
 
     # Return parameters
     x = reshape(mean(chain[1][Int64(warmup_steps/thin):Int64(total_steps/thin), 1:640], dims=1), 4, 160)
