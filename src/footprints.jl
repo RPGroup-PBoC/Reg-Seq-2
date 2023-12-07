@@ -18,11 +18,16 @@ function expression_shift(_df)
     df = copy(_df)
 
     # Compute relative (with pseudo counts)
-    insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    if "relative_counts" ∉ names(df)
+        insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    end
+
     # Turn sequences into integer
-    insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
+    if "int_promoter" ∉ names(df)
+        insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
+    end
     
-    freq_mat = frequency_matrix(df)
+    freq_mat = frequency_matrix(df)[1]
     # find wild type sequence 
     wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
     wt_seq = map(x -> x[2], wt_seq)
@@ -157,7 +162,7 @@ end
 
 Logarithm term if mutual information that can handle zeros.
 """
-function clog(x, y, z)
+function clog(x::Real, y::Real, z::Real)
     if x == 0 || y == 0 || z==0
         return 0
     else
@@ -208,7 +213,7 @@ function mutual_information_add_model(p::Matrix)
     p1 = sum(p, dims=1)
     p2 = sum(p, dims=2)
 
-    return sum([clog(p[j, i], p1[i], p2[j]) for i in 1:length(p1) for j in 1:length(p2)])
+    return sum(Float64[clog(p[j, i], p1[i], p2[j]) for i in 1:length(p1) for j in 1:length(p2)])
 end
 
 """
@@ -247,8 +252,12 @@ struct DensityModel{F<:Function} <: AbstractMCMC.AbstractModel
     ℓπ::F
     mu_arr::AbstractArray
     seq_mat
+    n_seqs
+    function DensityModel(ℓπ::F, mu_arr, seq_mat) where F<:Function
+        new{F}(ℓπ, mu_arr, seq_mat, size(seq_mat)[1])
+    end
 end
-
+#DensityModel(ℓπ, mu_arr, seq_mat) = DensityModel(ℓπ, mu_arr, seq_mat, size(seq_mat)[1])
 
 """
     struct Transition{T, L}
@@ -332,21 +341,21 @@ q(spl::MetropolisHastings, θ::Matrix{<:Real}, θcond::Matrix{<:Real}) =
 q(spl::MetropolisHastings, t1::Transition, t2::Transition) = q(spl, t1.θ, t2.θ)
 
 # Calculate the density of the model given some parameterization.
-ℓπ(model::DensityModel, θ) = model.ℓπ(model.seq_mat, model.mu_arr, θ)
-ℓπ(model::DensityModel, T::Transition) = model.ℓπ(model.seq_mat, model.mu_arr, T.θ)
+ℓπ(model::DensityModel, θ) = model.ℓπ(model.seq_mat, model.mu_arr, θ, model.n_seqs)
+ℓπ(model::DensityModel, T::Transition) = model.ℓπ(model.seq_mat, model.mu_arr, T.θ, model.n_seqs)
 
 
 """
     function density(seq_mat, mu::Vector{Float64}, θ::Matrix{Float64})
 
-Compute kerned density estimation for additive model and count indentities. Compute
+Compute kernel density estimation for additive model and count indentities. Compute
 mutual information given KDE.
 """
-function density(seq_mat, mu::Vector{Float64}, θ::Matrix{Float64})
+function density(seq_mat::SparseMatrixCSC{Int64, Int64}, mu::AbstractVector, θ::Matrix{Float64}, n_seqs::Int64)
     en = (seq_mat * vec(θ))
     y = kde((en, mu), npoints=(10, 512))
     y.density ./= sum(y.density)
-    return mutual_information_add_model(y.density) * 100000
+    return mutual_information_add_model(y.density) * n_seqs
 end
 
 
@@ -441,6 +450,7 @@ function StatsBase.sample(
     samples = AbstractMCMC.save!!(samples, sample, 1, model, sampler, nsamples; kwargs...)
     # Step through the sampler.
     acceptance = 0
+    tracker = Float64[]
     for i in 2:nsamples
         # Obtain the next sample and state.
         sample, sampler, accept = AbstractMCMC.step(rng, model, sampler, sample; kwargs...)
@@ -448,9 +458,10 @@ function StatsBase.sample(
         # Save the sample.
         if i%thin == 0
             samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
-            println(density(seq_mat, model.mu_arr, sample.θ))
+            push!(tracker, density(seq_mat, model.mu_arr, sample.θ, model.n_seqs))
+            #println(density(seq_mat, model.mu_arr, sample.θ))
         end
-        if i%1000 ==0
+        if i%10000 ==0
             println("$i of $nsamples done.")
         end
         if i%adapt_steps == 0
@@ -460,7 +471,7 @@ function StatsBase.sample(
         end
     end
 
-    return AbstractMCMC.bundle_samples(samples; kwargs...)
+    return AbstractMCMC.bundle_samples(samples; kwargs...), tracker
 end
 
 
@@ -499,8 +510,9 @@ function run_mcmc(
     spl = MetropolisHastings(randn(4, 160))
 
     # Run sampler
-    chain = StatsBase.sample(model, spl, total_steps, seq_mat, thin=thin, adapt_steps=adapt_steps)
+    chain, tracker = StatsBase.sample(model, spl, total_steps, seq_mat, thin=thin, adapt_steps=adapt_steps)
 
     # Return parameters
     x = reshape(mean(chain[1][Int64(warmup_steps/thin):Int64(total_steps/thin), 1:640], dims=1), 4, 160)
+    return x, tracker, chain
 end
