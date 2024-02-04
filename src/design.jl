@@ -29,7 +29,7 @@ end
 
 Add sites upstream and downstream of a DNA sequence.
 """
-function add_sites_oligo(seq::BioSequences.LongDNA, up::BioSequences.LongDNA, down::BioSequences.LongDNA)
+function add_sites_oligo(seq::T, up::T, down::T) where T <:Union{BioSequences.LongDNA, String}
     return join_seqs(join_seqs(up, seq), down)
 end
 
@@ -58,12 +58,12 @@ function import_primer(index::Int, direction::String)
         record = open(FASTA.Reader, "/$path/data/forward_finalprimers.fasta") do r
             collect(r)[index]
         end
-        return sequence(record)
+        return sequence(record) |> LongDNA{4}
     elseif direction == "rev"
         record = open(FASTA.Reader, "/$path/data/reverse_finalprimers.fasta") do r
             collect(r)[index]
         end
-        return sequence(record) |> LongDNA{4}|> reverse_complement |> String
+        return sequence(record) |> LongDNA{4}|> reverse_complement 
     else
         throw(ArgumentError("dir has to be either \"fwd\" or \"rev\""))
     end
@@ -90,6 +90,17 @@ function add_primer(oligos::Vector{LongSequence{DNAAlphabet{4}}}, index::Int, di
     end
     return add_sites_oligo.(oligos, [fwd_primer], [rev_primer])
 end
+
+
+"""
+    add_primer(oligos::Vector{String}, index::Int, direction::String="both") 
+
+Add primer for given index to DNA sequence. Can add either forward, reverse or both primers.
+"""
+function add_primer(oligos::Vector{T}, index::Int, direction::String="both") where T<:AbstractString
+    return add_primer(LongDNA{4}.(oligos), index, direction)
+end
+
 
 
 """

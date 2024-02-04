@@ -6,6 +6,7 @@ using Random
 import MCMCChains
 using KernelDensity
 using SparseArrays
+using ImageFiltering
 using ..wgregseq: utils.onehot_encoder
 
 """
@@ -53,14 +54,16 @@ end
 
 Compute mutual information by binning relative counts and using all bases as variables.
 """
-function mutual_information_bases(_df, nbins=4)
+function mutual_information_bases(_df; nbins=4)
     # Create copy
     df = copy(_df)
 
     # Compute relative (with pseudo counts)
-    insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    if "relative_counts" ∉ names(df)
+        insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    end
     #df = df[df.relative_counts .> 0.05, :]
-    f = fit(Histogram, log.(df.relative_counts))#, nbins=nbins)
+    f = fit(Histogram, log.(df.relative_counts), nbins=nbins)
     #return f
     bins = f.edges[1] |> collect
     nbins = length(bins) - 1
@@ -94,6 +97,16 @@ function mutual_information_mutation(_df)
 
     # mu, m
     l = length(df.promoter[1])
+
+
+    # get wt sequence if not there
+    if ("wt_seq" ∉ names(df)) && ("int_wt" ∉ names(df))
+        freq_mat = frequency_matrix(df)[1]
+        # find wild type sequence 
+        wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
+        wt_seq = map(x -> x[2], wt_seq)
+        insertcols!(df, 3, :int_wt => fill(wt_seq, nrow(df)))
+    end 
 
     # Turn sequences into integer
     if "int_promoter" ∉ names(df)
@@ -209,7 +222,7 @@ end
 Compute mutual information for joint probability distribution of two random
 variables.
 """
-function mutual_information_add_model(p::Matrix)
+function mutual_information_add_model(p::Matrix)::Float64
     p1 = sum(p, dims=1)
     p2 = sum(p, dims=2)
 
@@ -353,7 +366,7 @@ mutual information given KDE.
 """
 function density(seq_mat::SparseMatrixCSC{Int64, Int64}, mu::AbstractVector, θ::Matrix{Float64}, n_seqs::Int64)
     en = (seq_mat * vec(θ))
-    y = kde((en, mu), npoints=(10, 512))
+    y = kde((en, mu), npoints=(2, 512))
     y.density ./= sum(y.density)
     return mutual_information_add_model(y.density) * n_seqs
 end
@@ -458,11 +471,12 @@ function StatsBase.sample(
         # Save the sample.
         if i%thin == 0
             samples = AbstractMCMC.save!!(samples, sample, i, model, sampler, nsamples; kwargs...)
-            push!(tracker, density(seq_mat, model.mu_arr, sample.θ, model.n_seqs))
+            push!(tracker, model.ℓπ(seq_mat, model.mu_arr, sample.θ, model.n_seqs))
             #println(density(seq_mat, model.mu_arr, sample.θ))
         end
         if i%10000 ==0
             println("$i of $nsamples done.")
+            println("Density: ", model.ℓπ(seq_mat, model.mu_arr, sample.θ, model.n_seqs))
         end
         if i%adapt_steps == 0
             sampler.sigma *= adapt_sigma(acceptance/adapt_steps)
@@ -516,3 +530,4 @@ function run_mcmc(
     x = reshape(mean(chain[1][Int64(warmup_steps/thin):Int64(total_steps/thin), 1:640], dims=1), 4, 160)
     return x, tracker, chain
 end
+

@@ -4,7 +4,7 @@ include("enzyme_list.jl")
 
 module utils
 include("utils.jl")
-export parse,num_unique,convert
+export parse,num_unique,convert,ecdf!
 end
 using .utils
 
@@ -17,8 +17,8 @@ module design
 include("design.jl")
 end
 
-module plotting_style
-include("plotting_style.jl")
+module viz
+include("viz.jl")
 end
 
 module quality_control
@@ -28,6 +28,7 @@ end
 module footprints
 include("footprints.jl")
 end
+
 
 
 end # module

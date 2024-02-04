@@ -1,5 +1,6 @@
 using BioSequences, CSV, DataFrames
 import BioSequences.reverese_complement
+using CairoMakie
 
 Base.convert(::Type{String}, x::BioSequences.LongSequence{DNAAlphabet{4}}) = string(x)
 Base.convert(::Type{BioSequences.LongDNA}, x::String) = LongDNA{4}(x)
@@ -207,3 +208,8 @@ end
 
 
 num_unique(x) = length(unique(x))
+
+
+function ecdf!(ax, x)
+    lines!(ax, sort(x), 1/length(x):1/length(x):1)
+end
