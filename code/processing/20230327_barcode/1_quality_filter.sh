@@ -31,4 +31,4 @@ HTML=$OUTPUT_DIR"/"$RESULT"/"$GROUP"_fastp_report.html"
 JSON=$OUTPUT_DIR"/"$RESULT"/"$GROUP"_fastp_report.json"
 
 # Define string to be ran on the termina
-fastp --in1 $READ1 --out1 $OUT1 --trim_tail1 '10'  --verbose --disable_length_filtering --html $HTML --json $JSON --report_title $html_report --thread '6' --n_base_limit '0'
+fastp --in1 $READ1 --out1 $OUT1 --trim_tail1 '6'  --verbose --disable_length_filtering --html $HTML --json $JSON --report_title $html_report --thread '6' --n_base_limit '0'

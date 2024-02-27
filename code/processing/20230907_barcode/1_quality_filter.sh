@@ -23,6 +23,7 @@ fi
 
 # Find read1 and read2 files
 READ1=$(find $FOLDER -name $GROUP"*R1*.fastq.gz")
+echo $READ1
 
 # Define output file paths
 OUT1=$OUT_FOLDER"/"$GROUP"_R1.fastq.gz"
