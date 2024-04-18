@@ -1,128 +1,128 @@
-name	group	protein_function
-rspA	Gold Standard	mandelate racemase/muconate lactonizing enzyme family protein RspA
-araA	Gold Standard	L-arabinose isomerase
-araB	Gold Standard	ribulokinase
-znuB	Gold Standard	Zn2+ ABC transporter membrane subunit
-znuC	Gold Standard	Zn2+ ABC transporter ATP binding subunit
-xylA	Gold Standard	xylose isomerase
-xylF	Gold Standard	xylose ABC transporter periplasmic binding protein
-dicC	Gold Standard	Qin prophage; putative DNA-binding transcriptional regulator DicC
-relE	Gold Standard	Qin prophage; mRNA interferase toxin RelE
-relB	Gold Standard	Qin prophage; antitoxin/DNA-binding transcriptional repressor RelB
-ftsK	Gold Standard	cell division DNA translocase FtsK
-znuA	Gold Standard	Zn2+ ABC transporter periplasmic binding protein
-lacI	Gold Standard	DNA-binding transcriptional repressor LacI
-marR	Gold Standard	DNA-binding transcriptional repressor MarR
-dgoR	Gold Standard	DNA-binding transcriptional repressor DgoR
-ompR	Gold Standard	OmpR dimer
-dicA	Gold Standard	DNA-binding transcriptional dual regulator DicA
-araC	Gold Standard	DNA-binding transcriptional dual regulator AraC
-blr	Antibiotic/toxin	Resistance to antibiotics that inhibit peptidoglycan synthesis 
-gyrA	Antibiotic/toxin	involved in DNA replication
-#lamB	Antibiotic/toxin	Facilitates diffusion of maltose across the outer membrane
-ghoT	Antibiotic/toxin	Part of type V toxin-antitoxin system
-#yafN	Antibiotic/toxin	Antitoxin to yafo/YafN transcription is induced by chloramphenicol treatment
-ihfA	Inc-4 (x) - stress	DNA-binding transcriptional dual regulator (integration host factor subunit)
-ompR	Inc-4 (y) - stress	OmpR phosphorylated DNA-binding transcriptional dual regulator
-ompF	Inc-4 (z) - stress	outer membrane porin 
-emrA	Antibiotic/toxin	protein of a tripartite efflux pump
-emrB	Antibiotic/toxin	protein of a tripartiate efflux pump
-crp	Inc-1 (x)	DNA-binding transcriptional dual regulator (activator/repressor)
-galS	Inc-1 (y)	transcriptional repressor (galactose isorepressor)
-mglB	Inc-1 (z1)	periplasmic binding protein of D-galactose / methyl-D-galactoside ABC transport system
-galE	Inc-1 (z2)	UDP-glucose 4-epimerase
-#dapA	lysine biosynthesis/ gold standard	lysine biosynthesis
-#ompA	phage receptor protein	receptor for several phage
-#hokB	Antibiotic/toxin	Persister cell formation
-#obgE	GTP binding protein	chromosome segregation/ribosome assembly
-yagB	Antibiotic/toxin	enhance the bundling of cytoskeleton proteins
-yjjJ	Antibiotic/toxin	toxic upon overexpression
-prlF	Antibiotic/toxin	Forms PrlF-YhaV antitoxin-toxin complex
-yhaV	Antibiotic/toxin	Ribonuclease activity
-hdeA	Heinemann dataset	periplasmic acid stress chaperone
-aceA	Heinemann dataset	isocitrate lyase
-ecnB	Heinemann dataset	bacteriolytic entericidin B lipoprotein
-mcbA	Heinemann dataset	DUF1471 domain-containing protein McbA
-tnaA	Heinemann dataset	tryptophanase / L-cysteine desulfhydrase
-mglB	Heinemann dataset	D-galactose/methyl-galactoside ABC transporter periplasmic binding protein
-gatA	Heinemann dataset	galactitol-specific PTS enzyme IIB component
-lpp	Heinemann dataset	murein lipoprotein
-tmaR	Heinemann dataset	PTS system regulator TmaR
-cusF	Heinemann dataset uncharacterized
-yjbJ	Heinemann dataset uncharacterized	
-elaB	Heinemann dataset uncharacterized	
-yncE	Heinemann dataset uncharacterized	
-yeeX	Heinemann dataset uncharacterized	
-yqjD	Heinemann dataset uncharacterized	
-ybaY	Heinemann dataset uncharacterized	
-ygiW	Heinemann dataset uncharacterized	
-zapB	Heinemann dataset uncharacterized
-ygaU	Heinemann dataset uncharacterized
-ybeD	Heinemann dataset uncharacterized
-#ybaB	Heinemann dataset uncharacterized
-#yifE	Heinemann dataset uncharacterized
-#iscX	Heinemann dataset uncharacterized
-#ybdZ	Heinemann dataset uncharacterized
-#erpA	Heinemann dataset uncharacterized
-#yajQ	Heinemann dataset uncharacterized
-#yggL	Heinemann dataset uncharacterized
-#yiiS	Heinemann dataset uncharacterized
-#yabP	uncharacterized protein	
-#yabQ	uncharacterized protein	multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant
-yacC	uncharacterized protein	putative lipoprotein
-yacH	uncharacterized protein	may encode a membrane protein
-yadG	uncharacterized protein	putative ABC transporter ATP-binding protein
-yadI	uncharacterized protein	putative PTS enzyme IIA component
-yadE	uncharacterized protein	putative polysaccharide deacetylase lipoprotein
-yadM	uncharacterized protein	putative fimbrial protein
-yadN	uncharacterized protein	putative fimbrial protein
-yadS	uncharacterized protein	PF03458 family protein
-ykfM	uncharacterized protein
-#ykgL	uncharacterized protein
-ykgR	uncharacterized protein
-yahC	uncharacterized protein	
-yahL	uncharacterized protein	
-yahM	uncharacterized protein	
-#yahN	uncharacterized protein	
-acrB	Antibiotic/toxin	Encodes inner membrane component of a tripartite, proton dependent, drug efflux pump.
-acrZ	Antibiotic/toxin	Encodes a small membrane protein associated with the AcrAB-TolC multidrug efflux pump 
-ldrD	Antibiotic/toxin	Acts as the toxin of a Type I toxin-antitoxin pair
-rdlD	Antibiotic/toxin	Regulates the LdrD toxin translation
-tabA	Antibiotic/toxin	May decrease biofilm dispersal in response to several toxin-antitoxin systems
-ratA	Antibiotic/toxin	Inhibits translation initiation
-dinQ	Antibiotic/toxin	Membrane toxin
-tisB	Antibiotic/toxin	Formation of persister cell
-ysdE	Antibiotic/toxin	Expression is higher during exponential phase than during stationary phase in rich media
-tolC	Antibiotic/toxin	Outer membrane channel of efflux system, pumps out toxins, antibiotics
-fur	YmfT_modulon
-sulA	YmfT_modulon
-intE	YmfT_modulon
-xisE	YmfT_modulon
-ymfH	YmfT_modulon
-ymfJ	YmfT_modulon
-ymfT	YmfT_modulon
-ymfL	YmfT_modulon
-ymfM	YmfT_modulon
-ymfN	YmfT_modulon
-beeE	YmfT_modulon
-jayE	YmfT_modulon
-ymfQ	YmfT_modulon
-stfE	YmfT_modulon
-icdC	YmfT_modulon
-recN	YmfT_modulon
-ybiY	YgeV_modulon
-rcsB	YgeV_modulon
-xdhA	YgeV_modulon
-xdhB	YgeV_modulon
-xdhC	YgeV_modulon
-ygeW	YgeV_modulon
-ygeX	YgeV_modulon
-ygeY	YgeV_modulon
-hyuA	YgeV_modulon
-ygfK	YgeV_modulon
-ssnA	YgeV_modulon
-ygfM	YgeV_modulon
-xdhD	YgeV_modulon
-ygfT	YgeV_modulon
-uacT	YgeV_modulon
-cpxR	YgeV_modulon
+name,group,protein_function
+rspA,Gold Standard,mandelate racemase/muconate lactonizing enzyme family protein RspA
+araA,Gold Standard,L-arabinose isomerase
+araB,Gold Standard,ribulokinase
+znuB,Gold Standard,Zn2+ ABC transporter membrane subunit
+znuC,Gold Standard,Zn2+ ABC transporter ATP binding subunit
+xylA,Gold Standard,xylose isomerase
+xylF,Gold Standard,xylose ABC transporter periplasmic binding protein
+dicC,Gold Standard,Qin prophage; putative DNA-binding transcriptional regulator DicC
+relE,Gold Standard,Qin prophage; mRNA interferase toxin RelE
+relB,Gold Standard,Qin prophage; antitoxin/DNA-binding transcriptional repressor RelB
+ftsK,Gold Standard,cell division DNA translocase FtsK
+znuA,Gold Standard,Zn2+ ABC transporter periplasmic binding protein
+lacI,Gold Standard,DNA-binding transcriptional repressor LacI
+marR,Gold Standard,DNA-binding transcriptional repressor MarR
+dgoR,Gold Standard,DNA-binding transcriptional repressor DgoR
+ompR,Gold Standard,OmpR dimer
+dicA,Gold Standard,DNA-binding transcriptional dual regulator DicA
+araC,Gold Standard,DNA-binding transcriptional dual regulator AraC
+blr,Antibiotic/toxin,Resistance to antibiotics that inhibit peptidoglycan synthesis 
+gyrA,Antibiotic/toxin,involved in DNA replication
+#lamB,Antibiotic/toxin,Facilitates diffusion of maltose across the outer membrane
+ghoT,Antibiotic/toxin,Part of type V toxin-antitoxin system
+#yafN,Antibiotic/toxin,Antitoxin to yafo/YafN transcription is induced by chloramphenicol treatment
+ihfA,Inc-4 (x) - stress,DNA-binding transcriptional dual regulator (integration host factor subunit)
+ompR,Inc-4 (y) - stress,OmpR phosphorylated DNA-binding transcriptional dual regulator
+ompF,Inc-4 (z) - stress,outer membrane porin 
+emrA,Antibiotic/toxin,protein of a tripartite efflux pump
+emrB,Antibiotic/toxin,protein of a tripartiate efflux pump
+crp,Inc-1 (x),DNA-binding transcriptional dual regulator (activator/repressor)
+galS,Inc-1 (y),transcriptional repressor (galactose isorepressor)
+mglB,Inc-1 (z1),periplasmic binding protein of D-galactose / methyl-D-galactoside ABC transport system
+galE,Inc-1 (z2),UDP-glucose 4-epimerase
+#dapA,lysine biosynthesis/ gold standard,lysine biosynthesis
+#ompA,phage receptor protein,receptor for several phage
+#hokB,Antibiotic/toxin,Persister cell formation
+#obgE,GTP binding protein,chromosome segregation/ribosome assembly
+yagB,Antibiotic/toxin,enhance the bundling of cytoskeleton proteins
+yjjJ,Antibiotic/toxin,toxic upon overexpression
+prlF,Antibiotic/toxin,Forms PrlF-YhaV antitoxin-toxin complex
+yhaV,Antibiotic/toxin,Ribonuclease activity
+hdeA,Heinemann dataset,periplasmic acid stress chaperone
+aceA,Heinemann dataset,isocitrate lyase
+ecnB,Heinemann dataset,bacteriolytic entericidin B lipoprotein
+mcbA,Heinemann dataset,DUF1471 domain-containing protein McbA
+tnaA,Heinemann dataset,tryptophanase / L-cysteine desulfhydrase
+mglB,Heinemann dataset,D-galactose/methyl-galactoside ABC transporter periplasmic binding protein
+gatA,Heinemann dataset,galactitol-specific PTS enzyme IIB component
+lpp,Heinemann dataset,murein lipoprotein
+tmaR,Heinemann dataset,PTS system regulator TmaR
+cusF,Heinemann dataset uncharacterized,
+yjbJ,Heinemann dataset uncharacterized,
+elaB,Heinemann dataset uncharacterized,
+yncE,Heinemann dataset uncharacterized,
+yeeX,Heinemann dataset uncharacterized,
+yqjD,Heinemann dataset uncharacterized,
+ybaY,Heinemann dataset uncharacterized,
+ygiW,Heinemann dataset uncharacterized,
+zapB,Heinemann dataset uncharacterized,
+ygaU,Heinemann dataset uncharacterized,
+ybeD,Heinemann dataset uncharacterized,
+#ybaB,Heinemann dataset uncharacterized,
+#yifE,Heinemann dataset uncharacterized,
+#iscX,Heinemann dataset uncharacterized,
+#ybdZ,Heinemann dataset uncharacterized,
+#erpA,Heinemann dataset uncharacterized,
+#yajQ,Heinemann dataset uncharacterized,
+#yggL,Heinemann dataset uncharacterized,
+#yiiS,Heinemann dataset uncharacterized,
+#yabP,uncharacterized protein,
+#yabQ,uncharacterized protein,multicopy suppressor of the slow growth phenotype of an rsgA deletion mutant
+yacC,uncharacterized protein,putative lipoprotein
+yacH,uncharacterized protein,may encode a membrane protein
+yadG,uncharacterized protein,putative ABC transporter ATP-binding protein
+yadI,uncharacterized protein,putative PTS enzyme IIA component
+yadE,uncharacterized protein,putative polysaccharide deacetylase lipoprotein
+yadM,uncharacterized protein,putative fimbrial protein
+yadN,uncharacterized protein,putative fimbrial protein
+yadS,uncharacterized protein,PF03458 family protein
+ykfM,uncharacterized protein,
+#ykgL,uncharacterized protein,
+ykgR,uncharacterized protein,
+yahC,uncharacterized protein,
+yahL,uncharacterized protein,
+yahM,uncharacterized protein,
+#yahN,uncharacterized protein,
+acrB,Antibiotic/toxin,"Encodes inner membrane component of a tripartite, proton dependent, drug efflux pump."
+acrZ,Antibiotic/toxin,Encodes a small membrane protein associated with the AcrAB-TolC multidrug efflux pump 
+ldrD,Antibiotic/toxin,Acts as the toxin of a Type I toxin-antitoxin pair
+rdlD,Antibiotic/toxin,Regulates the LdrD toxin translation
+tabA,Antibiotic/toxin,May decrease biofilm dispersal in response to several toxin-antitoxin systems
+ratA,Antibiotic/toxin,Inhibits translation initiation
+dinQ,Antibiotic/toxin,Membrane toxin
+tisB,Antibiotic/toxin,Formation of persister cell
+ysdE,Antibiotic/toxin,Expression is higher during exponential phase than during stationary phase in rich media
+tolC,Antibiotic/toxin,"Outer membrane channel of efflux system, pumps out toxins, antibiotics"
+fur,YmfT_modulon,
+sulA,YmfT_modulon,
+intE,YmfT_modulon,
+xisE,YmfT_modulon,
+ymfH,YmfT_modulon,
+ymfJ,YmfT_modulon,
+ymfT,YmfT_modulon,
+ymfL,YmfT_modulon,
+ymfM,YmfT_modulon,
+ymfN,YmfT_modulon,
+beeE,YmfT_modulon,
+jayE,YmfT_modulon,
+ymfQ,YmfT_modulon,
+stfE,YmfT_modulon,
+icdC,YmfT_modulon,
+recN,YmfT_modulon,
+ybiY,YgeV_modulon,
+rcsB,YgeV_modulon,
+xdhA,YgeV_modulon,
+xdhB,YgeV_modulon,
+xdhC,YgeV_modulon,
+ygeW,YgeV_modulon,
+ygeX,YgeV_modulon,
+ygeY,YgeV_modulon,
+hyuA,YgeV_modulon,
+ygfK,YgeV_modulon,
+ssnA,YgeV_modulon,
+ygfM,YgeV_modulon,
+xdhD,YgeV_modulon,
+ygfT,YgeV_modulon,
+uacT,YgeV_modulon,
+cpxR,YgeV_modulon,
