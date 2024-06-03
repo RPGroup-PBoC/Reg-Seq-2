@@ -1,6 +1,6 @@
-# 1000_genes_ecoli
+# Reg-Seq-2
 
-This is the Github Repository for the whole genome Reg-Seq project.
+This is the Github Repository for the second iteration of the  Reg-Seq project.
 The code in this project is written in Julia, which can be downloaded [here](https://julialang.org/downloads/).
 
 
