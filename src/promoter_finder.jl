@@ -1,4 +1,4 @@
-using BioSequences, GLM, DataFrames, CSV
+using BioSequences, GLM, DataFrames, CSV, PyCall
 
 ####################################
 ## Following Code is adapted from ##
@@ -403,3 +403,51 @@ function predict(p::Promoter_Calculator, sequence::BioSequences.LongDNA{4}, TSS_
 end
 
 predict(p::Promoter_Calculator, sequence::String, TSS_range::Tuple{Int64, Int64}) = predict(p::Promoter_Calculator, BioSequences.LongDNA{4}(sequence), TSS_range)
+
+
+####################################
+## Following Code is adapted from ##
+## Lagator et al. 2022            ##
+####################################
+
+
+function predict(seq::Vector{Int}, model::String="Pr")
+    py"""
+# import packages
+import numpy as np
+import pandas as pd
+
+import functools 
+from sys import path as syspath
+
+syspath.append("/Users/tomroeschinger/git/Thermoters/functions/")
+package_path = "/Users/tomroeschinger/git/Thermoters/"
+
+import os
+from collections import OrderedDict
+import pickle
+
+from model_functions import *
+from copy import deepcopy
+from Bio import SeqIO
+bases = "acgt"
+lett_to_index = dict(zip(bases,range(4)))
+from scipy.special import logsumexp
+
+with open(os.path.join(package_path, "models/fitted_on_Pr.Pl.36N/model_[5]_extended"), "rb") as f:
+    theModel = pickle.load(f)
+
+def get_brick(seq, model='Pr'):
+    num_seq = np.array([seq], dtype=np.int8)
+    bricks = getBrickDict({model: num_seq}, theModel)[model][0]
+    return bricks 
+"""
+    return py"get_brick"(seq)
+end
+
+function predict(seq::String, model)
+    dict = Dict('A' => 1, 'C' => 2, 'G' => 3, 'T' => 4)
+    return predict([dict[x] for x in collect(seq)])
+end
+
+predict(x::BioSequences.LongDNA{4}, model) = predict(string(x), model)
