@@ -168,6 +168,8 @@ gc_ini = 'Glucose'
 rep_ini = '1'
 d_ini = '1'
 
+
+
 wt_seq = df_meta.loc[df_meta['promoter'] == prom_ini, "promoter_seq"].values[0]
 
 # populate datasources with initial values
@@ -183,6 +185,21 @@ data_display = ColumnDataSource({'pos': _df['pos'].values[0],
                                  'mut_info': _df['mut_info'].values[0]})
                                  #'footprint': list(_df['footprint'].values), 
                                  #'footprint_test': list(_df['footprint_test'].values)})
+
+replicate_comparer = ColumnDataSource({'rep1': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
+                                                             & (collapse_df['growth_condition'] == gc_ini)
+                                                             & (collapse_df['replicate'] == rep_ini)
+                                                             & (collapse_df['d'] == d_ini), 
+                                                             'mut_info'].values[0],
+                                       'rep2': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
+                                                             & (collapse_df['growth_condition'] == gc_ini)
+                                                             & (collapse_df['replicate'] == str(-int(rep_ini)+3))
+                                                             & (collapse_df['d'] == d_ini), 
+                                                             'mut_info'].values[0],
+})
+replicate_comparer_line = ColumnDataSource({'x': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])],
+                                            'y': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])]})
+
 
 _df_exshift = collapse_exshift_df.loc[(collapse_exshift_df['promoter'] == prom_ini) 
                                     & (collapse_exshift_df['growth_condition'] == gc_ini)
@@ -299,6 +316,14 @@ p_exshift.add_layout(color_bar, "right")
 p_info.xaxis.ticker = np.arange(-11, 5) * 10
 #p_footprint_test.xaxis.ticker = np.arange(-11, 5) * 10
 
+p_replicates = bokeh.plotting.figure(width=400, height=300, 
+                               x_axis_label='replicate 1',
+                               y_axis_label='replicate 2',
+                               title="Mutual Information at each base per replicate",)
+
+p_replicates.scatter(source=replicate_comparer, x='rep1', y='rep2')
+p_replicates.line(source=replicate_comparer_line, x='x', y='y', line_dash='dashed', color="gray")
+
 
 # Define the callbacks
 args = {
@@ -315,7 +340,9 @@ args = {
     'regulonDB_desc': regulonDB_desc,
     'regulonDB': regulonDB,
     'x_axis': p_exshift.xaxis[1],
-    'p': p_exshift
+    'p': p_exshift,
+    'replicate_comparer': replicate_comparer,
+    'replicate_comparer_line': replicate_comparer_line
 }
 
 
@@ -348,9 +375,14 @@ selector_box = bokeh.layouts.row(
     prom_desc
 )
 plot = bokeh.layouts.column(
-    selector_box, 
-    p_info, 
-    p_exshift, 
+    selector_box,
+    bokeh.layouts.row(
+        bokeh.layouts.column(
+            p_info, 
+            p_exshift 
+        ),
+        p_replicates
+    ),
     regulonDB_desc)
 
 bokeh.io.save(plot)
