@@ -104,9 +104,9 @@ bokeh_theme()
 # Path to store html file
 bokeh.io.output_file('interactive_footprints.html')
 
-###############
-# Data Import #
-###############
+################################
+# Data Import and Manipulation #
+################################
 collapse_df = pd.DataFrame()
 
 
@@ -163,8 +163,8 @@ regulonDB = ColumnDataSource(df_regulonDB)
 promoters = list(df['promoter'].unique())
 
 # Set inital settings for plot
-prom_ini = 'xylFp'
-gc_ini = 'Glucose'
+prom_ini = 'yjbJ_predicted'
+gc_ini = 'LB + higher salt concentration - high osmolarity'
 rep_ini = '1'
 d_ini = '1'
 
@@ -180,12 +180,13 @@ _df = collapse_df.loc[(collapse_df['promoter'] == prom_ini)
            ['pos', 'mut_info']]
 
 
-
+# put values in ColumnDataSource 
 data_display = ColumnDataSource({'pos': _df['pos'].values[0], 
                                  'mut_info': _df['mut_info'].values[0]})
-                                 #'footprint': list(_df['footprint'].values), 
-                                 #'footprint_test': list(_df['footprint_test'].values)})
 
+
+
+# create source for comparing replciates
 replicate_comparer = ColumnDataSource({'rep1': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
                                                              & (collapse_df['growth_condition'] == gc_ini)
                                                              & (collapse_df['replicate'] == rep_ini)
@@ -196,20 +197,78 @@ replicate_comparer = ColumnDataSource({'rep1': collapse_df.loc[(collapse_df['pro
                                                              & (collapse_df['replicate'] == str(-int(rep_ini)+3))
                                                              & (collapse_df['d'] == d_ini), 
                                                              'mut_info'].values[0],
+                                        'pos': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
+                                                             & (collapse_df['growth_condition'] == gc_ini)
+                                                             & (collapse_df['replicate'] == str(-int(rep_ini)+3))
+                                                             & (collapse_df['d'] == d_ini), 
+                                                             'pos'].values[0],
 })
+
+# add sum of replicates
+replicate_comparer.data['x'] = replicate_comparer.data['rep1'] + replicate_comparer.data['rep2']
+
+# add normalized difference of replicates
+replicate_comparer.data['y'] = np.abs((replicate_comparer.data['rep1'] - replicate_comparer.data['rep2']) / (replicate_comparer.data['rep1'] + replicate_comparer.data['rep2']))
+
+# create source for 1:1 line in replicate comparison
 replicate_comparer_line = ColumnDataSource({'x': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])],
                                             'y': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])]})
 
 
+# extract initial values for expression shift
 _df_exshift = collapse_exshift_df.loc[(collapse_exshift_df['promoter'] == prom_ini) 
                                     & (collapse_exshift_df['growth_condition'] == gc_ini)
                                     & (collapse_exshift_df['replicate'] == rep_ini),
                                         ['pos', 'base', 'wt_base', 'expression_shift']]
 
+# populate source
 exshift_display = ColumnDataSource({'pos': _df_exshift['pos'].values[0], 
                                    'base': _df_exshift['base'].values[0],
                                     'wt_base': _df_exshift['wt_base'].values[0],
                                     'expression_shift': _df_exshift['expression_shift'].values[0]})
+
+
+
+df_temp_rep1 = collapse_exshift_df.loc[(collapse_exshift_df['promoter'] == prom_ini) 
+                      & (collapse_exshift_df['growth_condition'] == gc_ini)
+                      & (collapse_exshift_df['replicate'] == '1')
+                      ,:]
+df_temp_rep2 = collapse_exshift_df.loc[(collapse_exshift_df['promoter'] == prom_ini) 
+                      & (collapse_exshift_df['growth_condition'] == gc_ini)
+                      & (collapse_exshift_df['replicate'] == '2')
+                      ,:]
+
+
+df_temp = pd.merge(
+    pd.DataFrame(dict(pos=df_temp_rep1['pos'].values[0], base=df_temp_rep1['base'].values[0], expression_shift_1=df_temp_rep1['expression_shift'].values[0])),
+    pd.DataFrame(dict(pos=df_temp_rep2['pos'].values[0], base=df_temp_rep2['base'].values[0], expression_shift_2=df_temp_rep2['expression_shift'].values[0])),
+    on=["pos", "base"])
+
+df_temp['ex_prod'] = df_temp['expression_shift_1'] * df_temp['expression_shift_2']
+
+def get_abs(x):
+    return np.sqrt(np.sum(np.square(x)))
+
+df_temp = pd.merge(
+    df_temp.groupby('pos')[['expression_shift_1', 'expression_shift_2']].apply(get_abs).reset_index(),
+    df_temp.groupby('pos')['ex_prod'].agg("sum").reset_index(),
+    on="pos")
+
+df_temp['cos'] = np.abs(df_temp['ex_prod']) / (df_temp['expression_shift_1'] * df_temp['expression_shift_2'])
+
+angle_display = ColumnDataSource({'x': np.sqrt((df_temp['expression_shift_1'].values * df_temp['expression_shift_2']).values),
+                                  'y': df_temp['cos'].values,
+                                  'pos': df_temp['pos'].values,
+                                  'ecdf_x': np.sort(df_temp['cos'].values),
+                                  'ecdf_y': np.arange(len(df_temp['cos'].values)) / len(df_temp['cos'].values)
+
+})
+
+
+
+###################
+# Setting up plot #
+###################
 
 # Define the selections
 prom_selector = Select(options=list(np.sort(promoters)), value=prom_ini)
@@ -257,41 +316,6 @@ p_exshift = bokeh.plotting.figure(width=1000, height=200,
                                   tooltips=[('wild type base', '@wt_base')],
                                   tools=TOOLS)
 
-p_info = bokeh.plotting.figure(width=1000, height=200, 
-                               x_axis_label='position',
-                               y_axis_label='mutual information [bits]',
-                               title="Mutual Information from Data",)
-                               #x_range=p_exshift.x_range)
-
-#p_footprint = bokeh.plotting.figure(width=1000, height=200, 
-#                                    x_axis_label='position',
-#                                    y_axis_label='relative entropy [bits]',
-#                                    title="Relative Entropy from MCMC",
-#                                    x_range=p_exshift.x_range)
-
-
-
-#p_footprint_test = bokeh.plotting.figure(width=1000, height=200#, 
-#                                         x_axis_label='position',
- #                                        y_axis_label='relative entropy [bits]',
-#                                         title="Relative Entropy from MCMC (Expression Shift as initial #condition)",
- #                                        x_range=p_exshift.x_range,
-#                                         )
-
-
-# update axis to show letter
-p_exshift.yaxis.ticker = np.arange(1,5)
-p_exshift.yaxis.major_label_overrides = {(tick+1): x_ for tick, x_ in enumerate(['A', 'C', 'G', 'T'])}
-
-p_exshift.xaxis.major_label_overrides = {(tick-115): x_ for tick, x_ in enumerate(exshift_display.data['wt_base'][0::4])}
-p_exshift.xaxis.major_label_text_font_size = "6pt"
-
-# populate plots
-p_info.vbar(x='pos', top='mut_info', source=data_display)
-#p_footprint.vbar(x='pos', top='footprint', source=data_display)
-#p_footprint_test.vbar(x='pos', top='footprint_test', source=data_display)
-
-
 r = p_exshift.rect(x='pos', 
                y='base',
                width=1,
@@ -303,27 +327,68 @@ r = p_exshift.rect(x='pos',
                line_color=None,
                source=exshift_display
 )
+
+p_exshift.yaxis.ticker = np.arange(1,5)
+p_exshift.yaxis.major_label_overrides = {(tick+1): x_ for tick, x_ in enumerate(['A', 'C', 'G', 'T'])}
+
+p_exshift.xaxis.major_label_overrides = {(tick-115): x_ for tick, x_ in enumerate(exshift_display.data['wt_base'][0::4])}
+p_exshift.xaxis.major_label_text_font_size = "6pt"
+
 p_exshift.xaxis.ticker = np.arange(-115, 45)
 
 p_exshift.extra_x_ranges['x_above'] = Range1d(-115, 45)
-#p_exshift.extra_x_ranges.update({'x_above':  p_exshift.x_range})
 p_exshift.add_layout(LinearAxis(x_range_name='x_above', ticker=np.arange(-11, 5) * 10), 'above')
 
 color_bar = r.construct_color_bar(padding=5)
 p_exshift.add_layout(color_bar, "right")
 
-#p_footprint.xaxis.ticker = np.arange(-11, 5) * 10
+
+p_info = bokeh.plotting.figure(width=1000, height=200, 
+                               x_axis_label='position',
+                               y_axis_label='mutual information [bits]',
+                               title="Mutual Information from Data")
+
+p_info.vbar(x='pos', top='mut_info', source=data_display)
 p_info.xaxis.ticker = np.arange(-11, 5) * 10
-#p_footprint_test.xaxis.ticker = np.arange(-11, 5) * 10
+
 
 p_replicates = bokeh.plotting.figure(width=400, height=300, 
-                               x_axis_label='replicate 1',
-                               y_axis_label='replicate 2',
-                               title="Mutual Information at each base per replicate",)
+                                x_axis_label='replicate 1',
+                                y_axis_label='replicate 2',
+                                title="Mutual Information at each base per replicate",
+                                x_axis_type="log",
+                                y_axis_type="log",
+                                tooltips=[('Position', '@pos')],
+                                tools=TOOLS)
 
 p_replicates.scatter(source=replicate_comparer, x='rep1', y='rep2')
+
 p_replicates.line(source=replicate_comparer_line, x='x', y='y', line_dash='dashed', color="gray")
 
+
+p_replicates_ratio = bokeh.plotting.figure(width=400, height=300, 
+                                x_axis_label='Rep 1 + Rep 2',
+                                y_axis_label='(Rep 1 - Rep 2) / (Rep 1 + Rep 2)',
+                                tooltips=[('Position', '@pos')],
+                                tools=TOOLS)
+
+p_replicates_ratio.scatter(source=replicate_comparer, x='x', y='y')
+
+
+p_angles = bokeh.plotting.figure(width=400, height=300, 
+                                x_axis_label='(|r1_i||r2_i|)^(1/2)',
+                                y_axis_label='|cos theta|',
+                                title="Comparing Expression Shift",
+                                tooltips=[('Position', '@pos')],
+                                tools=TOOLS)
+
+p_angles.scatter(source=angle_display, x='x', y='y')
+
+p_angles_ecdf = bokeh.plotting.figure(width=400, height=300, 
+                                x_axis_label='|cos theta|',
+                                y_axis_label='ECDF')
+
+p_angles_ecdf.line(source=angle_display, x='ecdf_x', y='ecdf_y')
 
 # Define the callbacks
 args = {
@@ -342,7 +407,8 @@ args = {
     'x_axis': p_exshift.xaxis[1],
     'p': p_exshift,
     'replicate_comparer': replicate_comparer,
-    'replicate_comparer_line': replicate_comparer_line
+    'replicate_comparer_line': replicate_comparer_line,
+    'angle_display': angle_display
 }
 
 
@@ -375,13 +441,18 @@ selector_box = bokeh.layouts.row(
     prom_desc
 )
 plot = bokeh.layouts.column(
-    selector_box,
     bokeh.layouts.row(
         bokeh.layouts.column(
+            selector_box,
             p_info, 
             p_exshift 
         ),
-        p_replicates
+        bokeh.layouts.column(
+            p_replicates,
+            p_replicates_ratio),
+        bokeh.layouts.column(
+            p_angles,
+            p_angles_ecdf)
     ),
     regulonDB_desc)
 
