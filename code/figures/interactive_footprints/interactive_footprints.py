@@ -256,7 +256,7 @@ df_temp = pd.merge(
 
 df_temp['cos'] = np.abs(df_temp['ex_prod']) / (df_temp['expression_shift_1'] * df_temp['expression_shift_2'])
 
-angle_display = ColumnDataSource({'x': np.sqrt((df_temp['expression_shift_1'].values * df_temp['expression_shift_2']).values),
+angle_display = ColumnDataSource({'x': (df_temp['expression_shift_1'].values * df_temp['expression_shift_2']).values,
                                   'y': df_temp['cos'].values,
                                   'pos': df_temp['pos'].values,
                                   'ecdf_x': np.sort(df_temp['cos'].values),
@@ -376,7 +376,7 @@ p_replicates_ratio.scatter(source=replicate_comparer, x='x', y='y')
 
 
 p_angles = bokeh.plotting.figure(width=400, height=300, 
-                                x_axis_label='(|r1_i||r2_i|)^(1/2)',
+                                x_axis_label='|r1_i||r2_i|',
                                 y_axis_label='|cos theta|',
                                 title="Comparing Expression Shift",
                                 tooltips=[('Position', '@pos')],

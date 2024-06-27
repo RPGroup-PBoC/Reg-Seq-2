@@ -106,7 +106,7 @@ for (var i = 0; i < expression_shift_2.length; i=i+4) {
         norm_2 += expression_shift_2[i+j]**2;
         dot_prod += expression_shift_1[i+j] * expression_shift_2[i+j]
     }
-    norms.push(Math.sqrt(Math.sqrt(norm_1 * norm_2)));
+    norms.push(Math.sqrt(norm_1 * norm_2));
     cos_list.push(Math.abs(dot_prod) / Math.sqrt(norm_1 * norm_2));
     ecdf_y.push(i/ expression_shift_2.length);
 }
