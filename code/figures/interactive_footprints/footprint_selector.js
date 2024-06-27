@@ -10,44 +10,73 @@ var exshift_data = exshift.data;
 var prom = prom_selector.value;
 var gc = gc_selector.value;
 var replicate = rep_selector.value;
-var d = d_selector.value;
+var d = Number(d_selector.value);
 
 
 // Get data for footprints
 var prom_inds = getAllIndexes(source_data['promoter'], prom);
 var gc_inds = getAllIndexes(source_data['growth_condition'], gc);
 var rep_inds = getAllIndexes(source_data['replicate'], replicate);
-var d_inds = getAllIndexes(source_data['d'], d);
+//var d_inds = getAllIndexes(source_data['d'], d);
 
 var filteredArray = prom_inds.filter(value => gc_inds.includes(value));
 var filteredArray = filteredArray.filter(value => rep_inds.includes(value));
-var filteredArray = filteredArray.filter(value => d_inds.includes(value));
+//var filteredArray = filteredArray.filter(value => d_inds.includes(value));
 
+display['pos'] = source_data['pos'][filteredArray];
+display['mut_info'] = source_data['mut_info'][filteredArray];
 
-var pos = source_data['pos'][filteredArray];
-var mut_info = source_data['mut_info'][filteredArray];
-display['pos'] = pos;
-display['mut_info'] = mut_info;
+if (d == 0) {
+    display['pos'] = source_data['pos'][filteredArray];
+    display['mut_info'] = source_data['mut_info'][filteredArray];
+  } else {
+    var mut_info = [];
+    var pos = [];
+    for (var i = d; i < (source_data['mut_info'][filteredArray].length - d); i=i+1) {
+        pos.push(source_data['pos'][filteredArray][i]);
+        console.log(i)
+        console.log(d)
+        console.log(source_data['mut_info'][filteredArray].slice(i-d, i+d+1))
+        console.log(source_data['mut_info'][filteredArray].slice(i-d, i+d+1).reduce((a,b)=>a+b) / d)
+        mut_info.push(source_data['mut_info'][filteredArray].slice(i-d, i+d+1).reduce((a,b)=>a+b) / d);
+    }
+    display['pos'] = pos;
+    display['mut_info'] = mut_info;
+}
 
 
 // data for replicate plot
 var prom_inds = getAllIndexes(source_data['promoter'], prom);
 var gc_inds = getAllIndexes(source_data['growth_condition'], gc);
-var d_inds = getAllIndexes(source_data['d'], d);
+//var d_inds = getAllIndexes(source_data['d'], d);
 
 var rep_inds_1 = getAllIndexes(source_data['replicate'], '1');
 var rep_inds_2 = getAllIndexes(source_data['replicate'], '2');
 
 var filteredArray = prom_inds.filter(value => gc_inds.includes(value));
-var filteredArray = filteredArray.filter(value => d_inds.includes(value));
+//var filteredArray = filteredArray.filter(value => d_inds.includes(value));
 
 var filteredArray_1 = filteredArray.filter(value => rep_inds_1.includes(value));
-var rep1 = source_data['mut_info'][filteredArray_1];
-var pos1 = source_data['pos'][filteredArray_1];
-
 var filteredArray_2 = filteredArray.filter(value => rep_inds_2.includes(value));
-var rep2 = source_data['mut_info'][filteredArray_2];
-var pos2 = source_data['pos'][filteredArray_2];
+
+if (d == 0) {
+    var rep1 = source_data['mut_info'][filteredArray_1];
+    var pos1 = source_data['pos'][filteredArray_1];
+    var rep2 = source_data['mut_info'][filteredArray_2];
+    var pos2 = source_data['pos'][filteredArray_2];
+  } else {
+    var rep1 = [];
+    var pos1 = [];
+    var rep2 = [];
+    var pos2 = [];
+    for (var i = d; i < (source_data['pos'][filteredArray_1].length - d); i=i+1) {
+        pos1.push(source_data['pos'][filteredArray_1][i]);
+        pos2.push(source_data['pos'][filteredArray_2][i]);
+        rep1.push(source_data['mut_info'][filteredArray_1].slice(i-d, i+d+1).reduce((a,b)=>a+b) / d);
+        rep2.push(source_data['mut_info'][filteredArray_2].slice(i-d, i+d+1).reduce((a,b)=>a+b) / d);
+    }
+}
+
 
 rep_comparer['rep1'] = rep1;
 rep_comparer['rep2'] = rep2;
@@ -128,8 +157,6 @@ for (var i = 0; i < ex_display['wt_base'].length; i=i+4) {
 x_axis.major_label_overrides = map1;
 
 
-
-
 p.reset.emit();
 p.change.emit();
 
@@ -141,8 +168,8 @@ data_display.change.emit();
 exshift_display.change.emit();
 
 
-console.log(pos1)
-console.log(pos2)
+//console.log(pos1)
+//console.log(pos2)
 
 replicate_comparer.change.emit();
 replicate_comparer_line.change.emit();

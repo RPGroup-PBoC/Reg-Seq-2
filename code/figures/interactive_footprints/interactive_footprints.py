@@ -113,7 +113,9 @@ collapse_df = pd.DataFrame()
 # Go through all files and compact the data
 for file in glob.glob("../../analysis/all_data/footprints/*"):
     df = pd.read_csv(file)
-    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition', 'd']):
+    df = df.loc[df.d == 0, :]
+    df.drop(columns=['d'], inplace=True)
+    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition']):
         x = group.pos.values
         y = group.mut_info.values
         collapse_df = pd.concat([collapse_df, pd.DataFrame(data={
@@ -122,7 +124,6 @@ for file in glob.glob("../../analysis/all_data/footprints/*"):
             'promoter': name[0],
             'replicate': name[1],
             'growth_condition': name[2],
-            'd': name[3]
             })])
 
 
@@ -151,7 +152,8 @@ df_regulonDB = pd.read_csv('./regulonDB_meta.csv')
 
 # Transform types to strings
 collapse_df['replicate'] = collapse_df['replicate'].astype(str)
-collapse_df['d'] = collapse_df['d'].astype(str)
+
+#collapse_df['d'] = collapse_df['d'].astype(str)
 collapse_exshift_df['replicate'] = collapse_exshift_df['replicate'].astype(str)
 
 
@@ -166,7 +168,7 @@ promoters = list(df['promoter'].unique())
 prom_ini = 'yjbJ_predicted'
 gc_ini = 'LB + higher salt concentration - high osmolarity'
 rep_ini = '1'
-d_ini = '1'
+d_ini = 1
 
 
 
@@ -174,34 +176,37 @@ wt_seq = df_meta.loc[df_meta['promoter'] == prom_ini, "promoter_seq"].values[0]
 
 # populate datasources with initial values
 _df = collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
-           & (collapse_df['growth_condition'] == gc_ini)
-           & (collapse_df['replicate'] == rep_ini)
-           & (collapse_df['d'] == d_ini), 
-           ['pos', 'mut_info']]
+           & (collapse_df['growth_condition'] == gc_ini),
+           ['pos', 'mut_info', 'replicate']]
+
+
+def apply_window(d, pos, mut_info):
+    if d == 0:
+        return pos, mut_info
+    else:
+        return pos[d:-d], np.array([np.mean(mut_info[i-d:i+d]) for i in np.arange(d, len(pos)-1)])
 
 
 # put values in ColumnDataSource 
-data_display = ColumnDataSource({'pos': _df['pos'].values[0], 
-                                 'mut_info': _df['mut_info'].values[0]})
+pos, mut_info = apply_window(
+    d_ini, 
+    _df.loc[_df['replicate'] == rep_ini, 'pos'].values[0], 
+    _df.loc[_df['replicate'] == rep_ini, 'mut_info'].values[0])
+    
 
+data_display = ColumnDataSource({'pos': pos, 'mut_info': mut_info})
+
+# put values in ColumnDataSource 
+pos_alt, mut_info_alt = apply_window(
+    d_ini, 
+    _df.loc[_df['replicate'] == str(-int(rep_ini)+3), 'pos'].values[0], 
+    _df.loc[_df['replicate'] == str(-int(rep_ini)+3), 'mut_info'].values[0])
 
 
 # create source for comparing replciates
-replicate_comparer = ColumnDataSource({'rep1': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
-                                                             & (collapse_df['growth_condition'] == gc_ini)
-                                                             & (collapse_df['replicate'] == rep_ini)
-                                                             & (collapse_df['d'] == d_ini), 
-                                                             'mut_info'].values[0],
-                                       'rep2': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
-                                                             & (collapse_df['growth_condition'] == gc_ini)
-                                                             & (collapse_df['replicate'] == str(-int(rep_ini)+3))
-                                                             & (collapse_df['d'] == d_ini), 
-                                                             'mut_info'].values[0],
-                                        'pos': collapse_df.loc[(collapse_df['promoter'] == prom_ini) 
-                                                             & (collapse_df['growth_condition'] == gc_ini)
-                                                             & (collapse_df['replicate'] == str(-int(rep_ini)+3))
-                                                             & (collapse_df['d'] == d_ini), 
-                                                             'pos'].values[0],
+replicate_comparer = ColumnDataSource({'rep1': mut_info,
+                                       'rep2': mut_info_alt,
+                                       'pos': pos,
 })
 
 # add sum of replicates
@@ -274,7 +279,7 @@ angle_display = ColumnDataSource({'x': (df_temp['expression_shift_1'].values * d
 prom_selector = Select(options=list(np.sort(promoters)), value=prom_ini)
 gc_selector = Select(options=list(np.sort(collapse_df['growth_condition'].unique())), value=gc_ini)
 rep_selector = Select(options=list(collapse_df['replicate'].unique()), value=rep_ini)
-d_selector = Select(options=list(collapse_df['d'].unique()), value=d_ini)
+d_selector = Select(options=[str(x) for x in np.arange(6)], value=str(d_ini))
 
 
 # titles for selectors
