@@ -6,7 +6,7 @@ Galactose;M9 Minimal Media with 0.23% Galactose;;x;
 Sodium Salicytate;M9 Minimal Media with 0.5% Glucose and 2.5mM Sodium Salicytate;;x;
 Ethanol (2.5 %);M9 Minimal Media with 0.5% Glucose and 5% Ethanol;;x;
 Stationary Phase (1d);M9 Minimal Media with 0.5% grown to Stationary phase (24h);;x;
-Stationary Phase (3d);;;did not work;
+Stationary Phase (3d);;;;
 Cold Shock (1h at 10C);M9 Minimal Media with 0.5% Glucose with 1h at 10C in steady state;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC53247/;x;
 Ampicillin;M9 Minimal Media with 0.5% Glucose and 2mg/L Ampicillin (1/4th of MIC);https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5371073/;x;
 Heatshock;M9 Minimal Media with 0.5% Glucose with 5 min at 42C when reaching steady state;(test that media has reached the desired temperature);x;

@@ -91,48 +91,34 @@ end
 
 Compute mutual information using RNA and DNA counts as well as mutated base indentity.
 """
-function mutual_information_mutation(_df)
+function mutual_information_mutation(_df::T; l::Int=160, vec=false) where {T<:AbstractDataFrame}
+
+    if vec
+        return mutual_information_mutation_vec(int_promoter=_df.int_promoter, int_wt=_df.int_wt, ct=_df.ct, ct_0=_df.ct_0, ct_1=_df.ct_1, l=l)
+    end
     # Create copy
     df = copy(_df)
 
-    # mu, m
-    l = length(df.promoter[1])
-
-
-    # get wt sequence if not there
-    if ("wt_seq" ∉ names(df)) && ("int_wt" ∉ names(df))
-        freq_mat = frequency_matrix(df)[1]
-        # find wild type sequence 
-        wt_seq = argmax(sum(freq_mat, dims=1), dims=2) |> vec
-        wt_seq = map(x -> x[2], wt_seq)
-        insertcols!(df, 3, :int_wt => fill(wt_seq, nrow(df)))
-    end 
+    function is_mut(x, y)
+        return x .!= y
+    end
 
     # Turn sequences into integer
     if "int_promoter" ∉ names(df)
         insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
     end
-
-    if "int_wt" ∉ names(df)
-        insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]))
-    end
-    if :wt_seq ∉ names(df)
+    # get wt sequence if not there
+    if ("wt_seq" ∉ names(df)) && ("int_wt" ∉ names(df))
         freq_mat = frequency_matrix(df)[1]
         # find wild type sequence 
-        wt_seq = argmax(freq_mat, dims=2) |> vec
-        wt_seq = map(x -> x[2], wt_seq)
+        wt_seq_inds = argmax(sum(freq_mat, dims=1), dims=2) |> vec
+        wt_seq = map(x -> x[2], wt_seq_inds)
+        insertcols!(df, 3, :int_wt => fill(wt_seq, nrow(df)))
+    elseif "int_wt" ∉ names(df)
+        insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]))
+    end 
 
-        function is_mut(x)
-            return x .!= wt_seq
-        end
-
-        insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter))
-    else
-        function is_mut(x, y)
-            return x .!= y
-        end
-        insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter, df.int_wt))
-    end
+    insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter, df.int_wt))
 
     # initiate distribution
     p = zeros(l, 2, 2)
@@ -149,9 +135,35 @@ function mutual_information_mutation(_df)
     p ./= sum(df.ct)
 
     # compute mutual information
-    mut_information = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
+    mut_information::Vector{Float64} = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
     
     return mut_information
+end
+
+
+
+function is_mut(x, y)
+    return x .!= y
+end
+
+function mutual_information_mutation_vec(; int_promoter=Int64[], int_wt=Int64[], ct=Int64[], ct_0=Int64[], ct_1=Int64[], l::Int64=160)
+    s(x) = .~(x)
+    is_mutated = is_mut.(int_promoter, int_wt)
+    is_wt = s.(is_mutated)
+    # initiate distribution
+    p = zeros(l, 2, 2)
+    
+    # helper function for broadcasting
+    p[:, :, 1] = hcat(is_wt...) * hcat(ct_0, ct_1)
+    p[:, :, 2] = hcat(is_mutated...) * hcat(ct_0, ct_1)
+
+    # normalize
+    p ./= sum(ct)
+
+    # compute mutual information
+    #mut_information::Vector{Float64} = [sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
+    
+    return Float64[sum([clog(p[i, j, k], sum(p[i, :, k]), sum(p[i, j, :])) for j in 1:2 for k in 1:2]) for i in 1:l]
 end
 
 
@@ -211,8 +223,8 @@ function frequency_matrix(df)
     # Normalize to get frequencies
     freq_mat ./= sum(df.ct)
     =#
-    ct_0 = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_0]) / sum(df[!, :ct])
-    ct_1 = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_1]) / sum(df[!, :ct])
+    ct_0::Matrix{Float64} = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_0]) / sum(df[!, :ct])
+    ct_1::Matrix{Float64} = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_1]) / sum(df[!, :ct])
     return ct_0, ct_1
 end
 
