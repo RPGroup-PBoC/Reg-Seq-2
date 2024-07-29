@@ -49,6 +49,65 @@ function expression_shift(_df)
 end
 
 
+function expression_shift_matrix_vec(; int_promoter=Int64[], promoter=AbstractArray[], int_wt=Int64[], relative_counts=Float64[], l::Int64=160)
+
+    is_mutated = is_mut.(int_promoter, int_wt)
+
+    # initiate distribution
+    mean_rel_counts = mean(relative_counts)
+    a = (relative_counts .- mean_rel_counts) 
+
+    ex_shift_arr = zeros(160, 4)
+    for i in 1:length(relative_counts)
+        for j in 1:160
+            ex_shift_arr[j, int_promoter[i][j]] += a[i] * is_mutated[i][j]
+        end
+    end
+
+    return ex_shift_arr
+end
+
+
+function expression_shift_matrix(df; vec=false)
+
+    if vec
+        return expression_shift_matrix_vec(int_promoter=df.int_promoter, promoter=df.promoter, int_wt=df.int_wt, relative_counts=df.relative_counts)
+    end
+
+    _df = copy(df) 
+    # Compute relative (with pseudo counts)
+    if :wt_seq ∉ names(_df)
+        freq_mat = wgregseq.footprints.frequency_matrix(_df)[1]
+        # find wild type sequence 
+        wt_seq = argmax(freq_mat, dims=2) |> vec
+        wt_seq = map(x -> x[2], wt_seq)
+        wt_seq_dna = [wgregseq.footprints.DNA_dict_rev[x] for x in wt_seq]
+
+        function is_mut(x)
+            return x .!= wt_seq
+        end
+
+        insertcols!(_df, 4, :is_mutated => is_mut.(_df.int_promoter))
+    else
+        function is_mut(x, y)
+            return x .!= y
+        end
+        insertcols!(_df, 4, :is_mutated => is_mut.(_df.int_promoter, df.int_wt))
+    end
+
+    mean_rel_counts = mean(_df.relative_counts)
+    a = (_df.relative_counts .- mean_rel_counts) .* _df.is_mutated
+    b = wgregseq.utils.onehot_encoder.(_df.promoter)
+
+    ex_shift_arr = zeros(160, 4)
+    for i in 1:nrow(_df)
+        ex_shift_arr += a[i] .* b[i]
+    end
+
+    return ex_shift_arr ./ sum(b, dims=1)[1]
+end
+
+
 """
     function mutual_information_bases(_df, nbins=4)
 

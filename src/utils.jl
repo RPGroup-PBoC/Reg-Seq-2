@@ -35,6 +35,22 @@ Base.parse(::Type{Vector{String}}, x::Missing) = String[]
 Base.parse(::Type{Vector{Float64}}, x::Missing) = Float64[]
 
 
+# transform sequences to integers
+DNA_dict = Dict('A' => 1, 'C' => 2, 'G' => 3, 'T' => 4)
+DNA_dict_rev = Dict(1 => 'A', 2 => 'C', 3 => 'G',4 => 'T')
+
+
+"""
+    make_int(x, dict=DNA_dict)
+
+Turn DNA sequence into integer sequence.
+"""
+function make_int(x, dict=DNA_dict)
+    return Int64[dict[y] for y in x]
+end
+
+
+
 """
     onehot_encoder(sequence::BioSequences.LongDNA)
 
@@ -212,4 +228,139 @@ num_unique(x) = length(unique(x))
 
 function ecdf!(ax, x)
     lines!(ax, sort(x), 1/length(x):1/length(x):1)
+end
+
+function get_mapping_data()
+    dir = @__DIR__
+    path = joinpath(split(dir, '/')[1:end-1])
+
+    df_map = CSV.read(
+        "/$path/data/barcode_maps/20220514_mapping/mapped_barcodes_filtered.csv", 
+        DataFrame, 
+    )
+
+    # Filter out unnannotad sequences
+    df_map = df_map[df_map.name .!= "*", :]
+
+    # Filter out non-unique barcodes
+    gdf = groupby(df_map[(df_map.counts .> 2), :], :barcode)
+    _df = DataFrame()
+    for df in gdf
+        if nrow(df) == 1
+            append!(_df, df)
+        end
+    end
+    df_map = copy(_df)
+
+    # Get twist order to get wild type sequences
+    df_seqs = import_twist_order("/$path/data/twist_orders/2022-02-15_twist_order.csv")
+    df_wt = df_seqs[1:1501:119*1501, :];
+    insertcols!(df_wt, 4, :promoter_seq => [string(x[27:186]) for x in df_wt.sequence])
+
+    df_wt.promoter_seq |> unique |> length
+    df_map = leftjoin(df_map, rename(df_wt[!, [:promoter, :promoter_seq]], :promoter => :name), on="name")
+    rename!(df_map, :promoter_seq => :wt_seq);
+    return df_map
+end
+
+
+function get_dataset(i, promoter="all";df_map=get_mapping_data())
+    dir = @__DIR__
+    path = joinpath(split(dir, '/')[1:end-1])
+
+    if  isfile("/$path/data/barcode_counts/20240621_barcode/$(i)_DNA_collapsed.txt")
+        df_DNA = CSV.read(
+            "/$path/data/barcode_counts/20240621_barcode/$(i)_DNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_0", "barcode"]
+        )
+        # import RNA
+        df_RNA = CSV.read(
+            "/$path/data/barcode_counts/20240621_barcode/$(i)_RNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_1", "barcode"]
+        )
+    elseif isfile("/$path/data/barcode_counts/20231207_barcode/$(i)_DNA_collapsed.txt")
+        df_DNA = CSV.read(
+            "/$path/data/barcode_counts/20231207_barcode/$(i)_DNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_0", "barcode"]
+        )
+        # import RNA
+        df_RNA = CSV.read(
+            "/$path/data/barcode_counts/20231207_barcode/$(i)_RNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_1", "barcode"])
+    elseif isfile("/$path/data/barcode_counts/20230907_barcode/$(i)_DNA_collapsed.txt")
+        df_DNA = CSV.read(
+            "/$path/data/barcode_counts/20230907_barcode/$(i)_DNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_0", "barcode"]
+        )
+        # import RNA
+        df_RNA = CSV.read(
+            "/$path/data/barcode_counts/20230907_barcode/$(i)_RNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_1", "barcode"])
+    end
+    
+    # merge DNA and RNA reads
+    df = outerjoin(df_DNA, df_RNA, on=:barcode)
+    
+    # replace missing reads with 0
+    replace!(df.ct_0, missing => 0)
+    replace!(df.ct_1, missing => 0)
+    
+    # identify promoter sequences
+    df = innerjoin(df, df_map, on=:barcode)
+    
+    # compute total counts
+    insertcols!(df, 1, :ct => df.ct_0 .+ df.ct_1)
+    insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    
+    # Turn sequences into integer
+    insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
+    insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]));
+    if promoter != "all"
+        df = df[df.name .== promoter, :]
+    end
+    return df
+end
+
+
+"""
+    function get_reps(gc, promoter="all")
+
+Import reads for growth condition `gc` for all replicates.
+"""
+function get_reps(gc, promoter="all"; df_map=get_mapping_data())
+
+    dir = @__DIR__
+    path = joinpath(split(dir, '/')[1:end-1])
+
+    gcs = unique([x[1] for x in split.(vcat(
+                                        readdir("/$path/data/barcode_counts/20230907_barcode/"), 
+                                        readdir("/$path/data/barcode_counts/20231207_barcode/"), 
+                                        readdir("/$path/data/barcode_counts/20240621_barcode/")), "_")])
+    gcs = gcs[map(x -> x == gc, [split(y, '-')[1] for y in gcs])]
+    df = DataFrame()
+    reps = [split(x, '-')[2] for x in gcs]
+    for (gc, rep) in zip(gcs, reps)
+        _df = get_dataset(gc, promoter; df_map=df_map)
+        insertcols!(_df, 4, :replicate => rep)
+        append!(df, _df)
+    end
+    return df
 end
