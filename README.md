@@ -81,5 +81,4 @@ Contains explanatory notebooks that walk through certain steps in the experiment
 Contains tests for software module.
 
 ### data
-
 Contains supplementary data files.
