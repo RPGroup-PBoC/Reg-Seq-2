@@ -25,10 +25,15 @@ function shuffle_counts(df)
 end
 
 
+dir = @__DIR__
+path = joinpath(split(dir, '/'))
+
+df_gcs = CSV.read("/$path/growth_conditions.csv", DataFrame)
+
+gc_names = Dict(string.(collect(1:40)) .=> [replace(df_gcs[x, :Condition], " " => "-") for x in collect(1:40)])
+
 df_map = wgregseq.utils.get_mapping_data()
 
-df_gcs = CSV.read("growth_conditions.csv", DataFrame)
-gc_names = Dict(string.(collect(1:40)) .=> [df_gcs[x, :Condition] for x in collect(1:40)])
 
 function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuffles=1)
     footprints = []
@@ -66,9 +71,11 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     for i in 1:shuffles
         for gdf in groupby(shuffle_df, :replicate)  
             if d == 0
-                push!(footprints, wgregseq.footprints.mutual_information_mutation(shuffle_counts(gdf), vec=true))
+                inds = randperm(nrow(gdf))
+                push!(footprints, wgregseq.footprints.mutual_information_mutation_vec(int_wt=gdf.int_wt, int_promoter=gdf.int_promoter, ct=gdf.ct[inds], ct_0=gdf.ct_0[inds], ct_1=gdf.ct_1[inds]))
             else
-                x = wgregseq.footprints.mutual_information_mutation(shuffle_counts(gdf), vec=true)
+                inds = randperm(nrow(gdf))
+                x = wgregseq.footprints.mutual_information_mutation_vec(int_wt=gdf.int_wt, int_promoter=gdf.int_promoter, ct=gdf.ct[inds], ct_0=gdf.ct_0[inds], ct_1=gdf.ct_1[inds])
                 push!(footprints, [mean(x[i-d:i+d]) for i in 1+d:160-d])
             end
         end
@@ -126,7 +133,7 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     gd = fig[5, 1:2] = GridLayout()
 
     # Plot footprints for data and shuffles
-    ax1 = Axis(ga[1, 1], title="$prom $gc_name/nOriginal 1", xlabel="position", ylabel="mutual\n information", xticks=-110:5:40, xticklabelsize=7)
+    ax1 = Axis(ga[1, 1], title="$prom $gc_name\nOriginal 1", xlabel="position", ylabel="mutual\n information", xticks=-110:5:40, xticklabelsize=7)
     ax2 = Axis(ga[2, 1], title="Original 2", xlabel="position", ylabel="mutual\n information", xticks=-110:5:40, xticklabelsize=7)
     ax3 = Axis(ga[3, 1], title="Background subtracted Rep 1", xlabel="position", xticks=-110:5:40, xticklabelsize=7)
     ax4 = Axis(ga[4, 1], title="Background subtracted Rep 2", xlabel="position", xticks=-110:5:40, xticklabelsize=7)
@@ -203,6 +210,13 @@ for prom in unique(df.name)
     if prom in ["galEp", "ybeDp2"]
         continue
     end
-    fig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=10)
-    save("$prom-test.pdf", fig)
+
+    if ~ispath("/$path/replicate_test/$prom/")
+        mkdir("/$path/replicate_test/$prom/")
+    end
+    fig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=100)
+    save("/$path/replicate_test/$prom/$prom-$(gc_names(gc)).pdf", fig)
+    println("$prom done.")
 end
+
+println("$gc done")
