@@ -98,19 +98,11 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     shuffle_rep2_mat = hcat(shuffle_rep2...)
     quantiles2 = [quantile(shuffle_rep2_mat[i, :], [0.25, 0.75]) for i in 1:160-2d]
     
-    shuffle1_flat = vcat((shuffle_rep1 ./ vec(sum(hcat(shuffle_rep1...), dims=1)))...)
-    shuffle2_flat = vcat((shuffle_rep2 ./ vec(sum(hcat(shuffle_rep2...), dims=1)))...)
+    #shuffle1_flat = vcat((shuffle_rep1 ./ vec(sum(hcat(shuffle_rep1...), dims=1)))...)
+    #shuffle2_flat = vcat((shuffle_rep2 ./ vec(sum(hcat(shuffle_rep2...), dims=1)))...)
     
     rep1_sub = map(x -> max(x, 0), footprints[1] .- vec(med1))
     rep2_sub = map(x -> max(x, 0), footprints[2] .- vec(med2))
-    
-    # compute pdfs
-    X = vcat([hcat(shuffle_2d[i]...) for i in 1:length(shuffle_2d)]...)'
-    B = kde((X[1, :], X[2, :]))
-    df_pdf = DataFrame(pdf_KDE=[pdf(B, x...) for x in data_2d], position=collect(-115+d:44-d))
-    
-    df_pdf.pdf_KDE = [max(0, x) for x in df_pdf.pdf_KDE]
-    df_pdf.pdf_KDE .+= minimum(filter(x -> x > 0, df_pdf.pdf_KDE))
     
     ecdf = sort(data_1d)
     cdf = map(x -> sum(shuffle_1d .<= x), ecdf) ./ length(shuffle_1d)
@@ -118,8 +110,6 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     ecdf_2 = sort(data_1d_2)
     cdf_2 = map(x -> sum(shuffle_1d_2 .<= x), ecdf_2) ./ length(shuffle_1d_2)
     
-    pdf_cutoff = 1
-    colors = df_pdf.pdf_KDE .< pdf_cutoff
     
     ############################
     ### init figure and grid ###
@@ -167,40 +157,40 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     
     
     # compute Kolmogorov-Smirnov test and plot ecdf
-    KST = maximum(abs.(collect(1/length(ecdf):1/length(ecdf):1) .- cdf))
+    KST_sum = maximum(abs.(collect(1/length(ecdf):1/length(ecdf):1) .- cdf))
     ax = Axis(gc[1, 1], xlabel="rep1 + rep2", ylabel="ECDF")
     lines!(ax, ecdf, 1/length(ecdf):1/length(ecdf):1, label="Data", color="orange")
     lines!(ax, ecdf, cdf, label="Shuffles", color="gray")
-    ax.title = "Kolmogorov-Smirnov test: $(round(KST, digits=4))"
+    ax.title = "Kolmogorov-Smirnov test: $(round(KST_sum, digits=4))"
     axislegend(ax, position=:rb)
     
     # compute Kolmogorov-Smirnov test and plot ecdf
-    KST = maximum(abs.(collect(1/length(ecdf_2):1/length(ecdf_2):1) .- cdf_2))
+    KST_diff = maximum(abs.(collect(1/length(ecdf_2):1/length(ecdf_2):1) .- cdf_2))
     ax = Axis(gc[2, 1], xlabel="(rep1 - rep2) / (rep1 + rep2)", title="Kolmogorov-Smirnov test\n (based on rep1 + rep2)", ylabel="ECDF")
     lines!(ax, ecdf_2, 1/length(ecdf_2):1/length(ecdf_2):1, label="Data", color="orange")
     lines!(ax, ecdf_2, cdf_2, label="Shuffles", color="gray")
-    ax.title = "Kolmogorov-Smirnov test: $(round(KST, digits=4))"
+    ax.title = "Kolmogorov-Smirnov test: $(round(KST_diff, digits=4))"
     axislegend(ax, position=:rb)
     
     
     # compute pdfs
     X = vcat([hcat(shuffle_2d[i]...) for i in 1:length(shuffle_2d)]...)'
     B = kde((X[1, :], X[2, :]))
-    df_pdf = DataFrame(pdf_KDE=[pdf(B, x...) for x in data_2d], position=collect(-115+d:44-d))
+    pdf_KDE=[pdf(B, x...) for x in data_2d]
 
     pdf_shuffle = [pdf(B, X[1, i], X[2, i]) for i in 1:size(X)[2]]
     m_shuff = mean(pdf_shuffle)
     s_shuff = std(pdf_shuffle)
 
-    df_pdf.pdf_KDE = [max(0, x) for x in df_pdf.pdf_KDE]
-    df_pdf.pdf_KDE .+= minimum(filter(x -> x > 0, df_pdf.pdf_KDE))
+    pdf_KDE = [max(0, x) for x in pdf_KDE]
+    pdf_KDE .+= minimum(filter(x -> x > 0, pdf_KDE))
     
     ax = Axis(gd[1, 1], xlabel="position", ylabel="PDF", xticks=-110:5:40, xticklabelsize=7, yscale=log10)
-    scatter!(ax, df_pdf.position, df_pdf.pdf_KDE, label="2D KDE")
+    scatter!(ax, -115+d:44-d, pdf_KDE, label="2D KDE")
     lines!(ax, [-115, 44], [m_shuff, m_shuff], label="2D KDE")
     lines!(ax, [-115, 44], [m_shuff, m_shuff] .- s_shuff, linestyle=:dash)
     axislegend(ax)
-    return fig
+    return fig, KST_sum, KST_diff, (pdf_KDE .- m_shuff) ./ s_shuff
     
 end
 
@@ -214,8 +204,12 @@ for prom in unique(df.name)
     if ~ispath("/$path/replicate_test/$prom/")
         mkdir("/$path/replicate_test/$prom/")
     end
-    fig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=100)
-    save("/$path/replicate_test/$prom/$prom-$(gc_names(gc)).pdf", fig)
+    fig, KST_sum, KST_duff, sig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=2)
+    save("/$path/replicate_test/$prom/$prom-$(gc_names(gc))_plot.pdf", fig)
+    
+    open("/$path/replicate_test/$prom/geek.txt", "w") do file
+        write(file, "$gc\t$(KST_sum)\t$(KST_diff)\t$(sig)\n")
+    end
     println("$prom done.")
 end
 
