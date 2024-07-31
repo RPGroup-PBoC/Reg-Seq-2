@@ -187,8 +187,8 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     
     ax = Axis(gd[1, 1], xlabel="position", ylabel="PDF", xticks=-110:5:40, xticklabelsize=7, yscale=log10)
     scatter!(ax, -115+d:44-d, pdf_KDE, label="2D KDE")
-    lines!(ax, [-115, 44], [m_shuff, m_shuff], label="2D KDE")
-    lines!(ax, [-115, 44], [m_shuff, m_shuff] .- s_shuff, linestyle=:dash)
+    lines!(ax, [-115, 44], [m_shuff, m_shuff], label="mean of shuffles", color="orange")
+    lines!(ax, [-115, 44], [m_shuff, m_shuff] .- s_shuff, linestyle=:dash, color="gray")
     axislegend(ax)
     return fig, KST_sum, KST_diff, (pdf_KDE .- m_shuff) ./ s_shuff
     
@@ -204,10 +204,10 @@ for prom in unique(df.name)
     if ~ispath("/$path/replicate_test/$prom/")
         mkdir("/$path/replicate_test/$prom/")
     end
-    fig, KST_sum, KST_duff, sig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=2)
+    fig, KST_sum, KST_diff, sig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=500)
     save("/$path/replicate_test/$prom/$prom-$(gc_names(gc))_plot.pdf", fig)
     
-    open("/$path/replicate_test/$prom/geek.txt", "w") do file
+    open("/$path/replicate_test/$prom/$prom-stats.txt", "a") do file
         write(file, "$gc\t$(KST_sum)\t$(KST_diff)\t$(sig)\n")
     end
     println("$prom done.")
