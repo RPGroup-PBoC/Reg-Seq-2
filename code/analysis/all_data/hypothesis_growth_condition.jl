@@ -214,7 +214,6 @@ for prom in unique(df.name)
     end
     
     println("$prom done.")
-    break
 end
 
 println("$gc done")
