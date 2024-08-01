@@ -2,11 +2,12 @@ using wgregseq, CairoMakie, Statistics, CSV, DataFrames, StatsBase, Random, Kern
 
 wgregseq.viz.default_makie!()
 
-if length(ARGS) == 0
-    throw(ErrorException("No Growth Condition provided."))
-end
+gc = "20"
+#if length(ARGS) == 0
+#    throw(ErrorException("No Growth Condition provided."))
+#end
 
-gc = ARGS[1]
+#gc = ARGS[1]
 
 
 """
@@ -190,13 +191,14 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     lines!(ax, [-115, 44], [m_shuff, m_shuff], label="mean of shuffles", color="orange")
     lines!(ax, [-115, 44], [m_shuff, m_shuff] .- s_shuff, linestyle=:dash, color="gray")
     axislegend(ax)
-    return fig, KST_sum, KST_diff, (pdf_KDE .- m_shuff) ./ s_shuff
+    return fig, KST_sum, KST_diff, (pdf_KDE .- m_shuff) ./ s_shuff, pdf_KDE, pdf_shuffle
     
 end
 
 df = wgregseq.utils.get_reps(gc; df_map=df_map);
 
-for prom in unique(df.name)
+KST_sum_arr, KST_diff_arr, sig_arr, pdf_KDE_arr, pdf_shuffle_arr = [], [], [], [], []
+for prom in ["dicCp"]#unique(df.name)
     if prom in ["galEp", "ybeDp2"]
         continue
     end
@@ -204,13 +206,22 @@ for prom in unique(df.name)
     if ~ispath("/$path/replicate_test/$prom/")
         mkdir("/$path/replicate_test/$prom/")
     end
-    fig, KST_sum, KST_diff, sig = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=500)
-    save("/$path/replicate_test/$prom/$prom-$(gc_names(gc))_plot.pdf", fig)
+    fig, a, b, c, d, e = shuffle_reps(df[df.name .== prom, :], gc_names(gc); d=1, shuffles=500)
+    push!(KST_sum_arr, a)
+    push!(KST_diff_arr, b)
+    push!(sig_arr, c)
+    push!(pdf_KDE_arr, d)
+    push!(pdf_shuffle_arr, e)
+
     
-    open("/$path/replicate_test/$prom/$prom-stats.txt", "a") do file
-        write(file, "$gc\t$(KST_sum)\t$(KST_diff)\t$(sig)\n")
-    end
+    #save("/$path/replicate_test/$prom/$prom-$(gc_names(gc))_plot.pdf", fig)
+    
+    #open("/$path/replicate_test/$prom/$prom-stats.txt", "a") do file
+        #write(file, "$gc\t$(KST_sum)\t$(KST_diff)\t$(sig)\n")
+    #end
+    
     println("$prom done.")
+    break
 end
 
 println("$gc done")
