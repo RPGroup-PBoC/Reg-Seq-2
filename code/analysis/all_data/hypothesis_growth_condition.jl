@@ -37,6 +37,7 @@ df_map = wgregseq.utils.get_mapping_data()
 
 
 function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuffles=1)
+
     footprints = []
     prom = df.name[1]
     # get dataset
@@ -195,7 +196,30 @@ function shuffle_reps(df::AbstractDataFrame, gc_name::AbstractString; d=1, shuff
     
 end
 
+
+skip_conditions = Dict(
+        "22" => "1", 
+        "38" => "2", 
+        "19" => "1",
+        "15" => "1",
+        "14" => "2",
+        "25" => "2",
+        "40" => "2",
+        "31" => "2",
+        "4" => "1",
+        "13" => "2",
+    )
+
+
 df = wgregseq.utils.get_reps(gc; df_map=df_map);
+
+if gc in keys(skip_conditions) |> collect
+    rep = skip_conditions[gc]
+    df = df[df.replicate .!= rep, :]
+end
+
+println(df.replicate |> unique)
+
 
 for prom in unique(df.name)
     if prom in ["galEp", "ybeDp2"]
@@ -213,7 +237,7 @@ for prom in unique(df.name)
         write(file, "$gc\t$(KST_sum)\t$(KST_diff)\t$(sig)\n")
     end
     
-    println("$prom done.")
+    #println("$prom done.")
 end
 
 println("$gc done")

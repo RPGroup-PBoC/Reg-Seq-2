@@ -314,6 +314,21 @@ function get_dataset(i, promoter="all";df_map=get_mapping_data())
             ignorerepeated=true, 
             delim=" ", 
             header=["ct_1", "barcode"])
+    elseif isfile("/$path/data/barcode_counts/20240907_barcode/$(i)_DNA_collapsed.txt")
+        df_DNA = CSV.read(
+            "/$path/data/barcode_counts/20240907_barcode/$(i)_DNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_0", "barcode"]
+        )
+        # import RNA
+        df_RNA = CSV.read(
+            "/$path/data/barcode_counts/20240907_barcode/$(i)_RNA_collapsed.txt", 
+            DataFrame, 
+            ignorerepeated=true, 
+            delim=" ", 
+            header=["ct_1", "barcode"])
     end
     
     # merge DNA and RNA reads
@@ -351,6 +366,7 @@ function get_reps(gc, promoter="all"; df_map=get_mapping_data())
     path = joinpath(split(dir, '/')[1:end-1])
 
     gcs = unique([x[1] for x in split.(vcat(
+                                        readdir("/$path/data/barcode_counts/20240907_barcode/"),
                                         readdir("/$path/data/barcode_counts/20230907_barcode/"), 
                                         readdir("/$path/data/barcode_counts/20231207_barcode/"), 
                                         readdir("/$path/data/barcode_counts/20240621_barcode/")), "_")])
