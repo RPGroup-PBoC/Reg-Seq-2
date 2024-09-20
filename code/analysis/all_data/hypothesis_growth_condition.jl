@@ -31,7 +31,7 @@ path = joinpath(split(dir, '/'))
 
 df_gcs = CSV.read("/$path/growth_conditions.csv", DataFrame)
 
-gc_names = Dict(string.(collect(1:40)) .=> [replace(df_gcs[x, :Condition], " " => "-") for x in collect(1:40)])
+gc_names = Dict(string.(collect(1:41)) .=> [replace(df_gcs[x, :Condition], " " => "-") for x in collect(1:41)])
 
 df_map = wgregseq.utils.get_mapping_data()
 
