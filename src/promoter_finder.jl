@@ -410,7 +410,7 @@ predict(p::Promoter_Calculator, sequence::String, TSS_range::Tuple{Int64, Int64}
 ## Lagator et al. 2022            ##
 ####################################
 
-
+#=
 function predict(seq::Vector{Int}, model::String="Pr")
     py"""
 # import packages
@@ -451,3 +451,4 @@ function predict(seq::String, model)
 end
 
 predict(x::BioSequences.LongDNA{4}, model) = predict(string(x), model)
+=#

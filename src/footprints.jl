@@ -9,6 +9,42 @@ using SparseArrays
 using ImageFiltering
 using ..wgregseq: utils.onehot_encoder
 
+
+function is_mut(x, y)
+    return x .!= y
+end
+
+function check_dataframe(_df)
+    df = copy(_df)
+
+    # Compute relative (with pseudo counts)
+    if "relative_counts" ∉ names(df)
+        insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    end
+    if "ct" ∉ names(df)
+        insertcols!(df, 3, :ct => df.ct_0 .+ df.ct_1)
+    end
+    # Turn sequences into integer
+    
+    if "int_promoter" ∉ names(df)
+        insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
+    end
+    # get wt sequence if not there
+    if ("wt_seq" ∉ names(df)) && ("int_wt" ∉ names(df))
+        freq_mat = frequency_matrix(df)[1]
+        # find wild type sequence 
+        wt_seq_inds = argmax(freq_mat, dims=2)
+        wt_seq = map(x -> x[2], wt_seq_inds)
+        insertcols!(df, 3, :int_wt => fill(wt_seq, nrow(df)))
+    elseif "int_wt" ∉ names(df)
+        insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]))
+    end 
+
+    insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter, df.int_wt))
+    return df
+end
+
+
 """
     function expression_shift(_df)
 
@@ -16,17 +52,7 @@ Plot promoter footprint and add annotations for annotated sites.
 """
 function expression_shift(_df)
     # Create copy
-    df = copy(_df)
-
-    # Compute relative (with pseudo counts)
-    if "relative_counts" ∉ names(df)
-        insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
-    end
-
-    # Turn sequences into integer
-    if "int_promoter" ∉ names(df)
-        insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
-    end
+    df = check_dataframe(_df)
     
     freq_mat = frequency_matrix(df)[1]
     # find wild type sequence 
@@ -68,43 +94,23 @@ function expression_shift_matrix_vec(; int_promoter=Int64[], promoter=AbstractAr
 end
 
 
-function expression_shift_matrix(df; vec=false)
+function expression_shift_matrix(_df; vec=false)
+    df = check_dataframe(_df)
 
     if vec
         return expression_shift_matrix_vec(int_promoter=df.int_promoter, promoter=df.promoter, int_wt=df.int_wt, relative_counts=df.relative_counts)
     end
 
-    _df = copy(df) 
-    # Compute relative (with pseudo counts)
-    if :wt_seq ∉ names(_df)
-        freq_mat = wgregseq.footprints.frequency_matrix(_df)[1]
-        # find wild type sequence 
-        wt_seq = argmax(freq_mat, dims=2) |> vec
-        wt_seq = map(x -> x[2], wt_seq)
-        wt_seq_dna = [wgregseq.footprints.DNA_dict_rev[x] for x in wt_seq]
+    mean_rel_counts = mean(df.relative_counts)
+    a = (df.relative_counts .- mean_rel_counts) .* df.is_mutated
+    b = onehot_encoder.(df.promoter)
 
-        function is_mut(x)
-            return x .!= wt_seq
-        end
-
-        insertcols!(_df, 4, :is_mutated => is_mut.(_df.int_promoter))
-    else
-        function is_mut(x, y)
-            return x .!= y
-        end
-        insertcols!(_df, 4, :is_mutated => is_mut.(_df.int_promoter, df.int_wt))
-    end
-
-    mean_rel_counts = mean(_df.relative_counts)
-    a = (_df.relative_counts .- mean_rel_counts) .* _df.is_mutated
-    b = wgregseq.utils.onehot_encoder.(_df.promoter)
-
-    ex_shift_arr = zeros(160, 4)
-    for i in 1:nrow(_df)
+    ex_shift_arr = zeros(length(_df.promoter[1]), 4)
+    for i in 1:nrow(df)
         ex_shift_arr += a[i] .* b[i]
     end
 
-    return ex_shift_arr ./ sum(b, dims=1)[1]
+    return ex_shift_arr #./ sum(b, dims=1)[1]
 end
 
 
@@ -117,10 +123,8 @@ function mutual_information_bases(_df; nbins=4)
     # Create copy
     df = copy(_df)
 
-    # Compute relative (with pseudo counts)
-    if "relative_counts" ∉ names(df)
-        insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
-    end
+
+
     #df = df[df.relative_counts .> 0.05, :]
     f = fit(Histogram, log.(df.relative_counts), nbins=nbins)
     #return f
@@ -151,33 +155,13 @@ end
 Compute mutual information using RNA and DNA counts as well as mutated base indentity.
 """
 function mutual_information_mutation(_df::T; l::Int=160, vec=false) where {T<:AbstractDataFrame}
+    df = check_dataframe(_df)
 
     if vec
         return mutual_information_mutation_vec(int_promoter=_df.int_promoter, int_wt=_df.int_wt, ct=_df.ct, ct_0=_df.ct_0, ct_1=_df.ct_1, l=l)
     end
-    # Create copy
-    df = copy(_df)
 
-    function is_mut(x, y)
-        return x .!= y
-    end
 
-    # Turn sequences into integer
-    if "int_promoter" ∉ names(df)
-        insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
-    end
-    # get wt sequence if not there
-    if ("wt_seq" ∉ names(df)) && ("int_wt" ∉ names(df))
-        freq_mat = frequency_matrix(df)[1]
-        # find wild type sequence 
-        wt_seq_inds = argmax(sum(freq_mat, dims=1), dims=2) |> vec
-        wt_seq = map(x -> x[2], wt_seq_inds)
-        insertcols!(df, 3, :int_wt => fill(wt_seq, nrow(df)))
-    elseif "int_wt" ∉ names(df)
-        insertcols!(df, 3, :int_wt => make_int.(df[:, :wt_seq]))
-    end 
-
-    insertcols!(df, 4, :is_mutated => is_mut.(df.int_promoter, df.int_wt))
 
     # initiate distribution
     p = zeros(l, 2, 2)
@@ -262,26 +246,7 @@ Compute frequency matrix for dataframe containing RNA and DNA counts
 for sequences in integer format.
 """
 function frequency_matrix(df)
-    #=
-    # Create matrix to store frequencies
-    freq_mat = zeros(2, 4, 160)
 
-    # Check if sequences exist as integer
-    if :int_promoter ∉ names(df)
-        int_promoter = make_int.(df.promoter)
-    else
-        int_promoter = df.int_promoter
-    end
-    # Sum up total counts of each base
-    for (gDNA_counts, cDNA_counts, prom) in zip(df.ct_0, df.ct_1, int_promoter)
-        for (i, j) in enumerate(prom)
-            freq_mat[1, j, i] += gDNA_counts
-            freq_mat[2, j, i] += cDNA_counts
-        end
-    end
-    # Normalize to get frequencies
-    freq_mat ./= sum(df.ct)
-    =#
     ct_0::Matrix{Float64} = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_0]) / sum(df[!, :ct])
     ct_1::Matrix{Float64} = sum(onehot_encoder.(df[!, :promoter]) .* df[!, :ct_1]) / sum(df[!, :ct])
     return ct_0, ct_1
