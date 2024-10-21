@@ -355,12 +355,7 @@ function get_dataset(i, promoter="all";df_map=get_mapping_data())
 end
 
 
-"""
-    function get_reps(gc, promoter="all")
-
-Import reads for growth condition `gc` for all replicates.
-"""
-function get_reps(gc, promoter="all"; df_map=get_mapping_data())
+function _get_reps(gc)
 
     dir = @__DIR__
     path = joinpath(split(dir, '/')[1:end-1])
@@ -371,8 +366,20 @@ function get_reps(gc, promoter="all"; df_map=get_mapping_data())
                                         readdir("/$path/data/barcode_counts/20231207_barcode/"), 
                                         readdir("/$path/data/barcode_counts/20240621_barcode/")), "_")])
     gcs = gcs[map(x -> x == gc, [split(y, '-')[1] for y in gcs])]
-    df = DataFrame()
     reps = [split(x, '-')[2] for x in gcs]
+    return gcs, reps
+end
+
+
+"""
+    function get_reps(gc, promoter="all")
+
+Import reads for growth condition `gc` for all replicates.
+"""
+function get_reps(gc, promoter="all"; df_map=get_mapping_data())
+
+    gcs, reps = _get_reps(gc)
+    df = DataFrame()
     for (gc, rep) in zip(gcs, reps)
         _df = get_dataset(gc, promoter; df_map=df_map)
         insertcols!(_df, 4, :replicate => rep)

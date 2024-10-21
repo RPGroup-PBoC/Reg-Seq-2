@@ -27,15 +27,16 @@ Phenazine Methosulfate;"M9 Minimal Media with 0.5% Glucose to steady state,  the
 Pyruvate;M9 Minimal Media with 0.5% Pyruvate;;x;
 Galactonate;;;;
 "H2O2 (2.5mM, 10min)";"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2.5mM H2O2 for 10min.";10 min treatment;x;
-Gentamycin;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5µg/ml gentamycin for 1h.";1h treatment;x;
+Gentamicin;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5µg/ml gentamicin for 1h.";1h treatment;x;
 Copper Sulfate (500µM);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 500 μM CuSO4 for 1h.";500 μM CuSO4 for 1h;x;
 HOCl (4mM);;4 mM HOCl for 1h;;
 Spermidine;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5mM spermidine for 1h.";for 1h;x;
 Serine Hydroxamate;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 0.4 mg/ml serine hydroxamate for 30min.";30 min;x;
 Anaerobic;;;;
 Low Osmolarity;"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h in 0.5 x M9 premix + 0.5% Glucose";;x;
-LB + higher salt concentration - high osmolarity;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in Standard LB + 0.75M NaCl";;x;
+LB + 0.75M NaCl;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in Standard LB + 0.75M NaCl";;x;
 Low Phosphate;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in in Minimal Media where disodium phosphate and monopotassium phosphate is reduced to 10%.";;x;
 Copper Sulfate (2mM);M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2 mM CuSO4 for 1h.;;;
 Acetate;M9 Minimal Media with 0.5% Sodium Acetate;;;
 Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;
+Anaerobic + Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;
