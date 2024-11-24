@@ -75,7 +75,7 @@ function expression_shift(_df)
 end
 
 
-function expression_shift_matrix_vec(; int_promoter=Int64[], promoter=AbstractArray[], int_wt=Int64[], relative_counts=Float64[], l::Int64=160)
+function expression_shift_matrix_vec(; int_promoter=Int64[], int_wt=Int64[], relative_counts=Float64[], l::Int64=160)
 
     is_mutated = is_mut.(int_promoter, int_wt)
 
@@ -98,7 +98,7 @@ function expression_shift_matrix(_df; vec=false)
     df = check_dataframe(_df)
 
     if vec
-        return expression_shift_matrix_vec(int_promoter=df.int_promoter, promoter=df.promoter, int_wt=df.int_wt, relative_counts=df.relative_counts)
+        return expression_shift_matrix_vec(int_promoter=df.int_promoter, int_wt=df.int_wt, relative_counts=df.relative_counts)
     end
 
     mean_rel_counts = mean(df.relative_counts)
@@ -158,7 +158,7 @@ function mutual_information_mutation(_df::T; l::Int=160, vec=false) where {T<:Ab
     df = check_dataframe(_df)
 
     if vec
-        return mutual_information_mutation_vec(int_promoter=_df.int_promoter, int_wt=_df.int_wt, ct=_df.ct, ct_0=_df.ct_0, ct_1=_df.ct_1, l=l)
+        return mutual_information_mutation_vec(int_promoter=df.int_promoter, int_wt=df.int_wt, ct=df.ct, ct_0=df.ct_0, ct_1=df.ct_1, l=l)
     end
 
 
@@ -183,11 +183,6 @@ function mutual_information_mutation(_df::T; l::Int=160, vec=false) where {T<:Ab
     return mut_information
 end
 
-
-
-function is_mut(x, y)
-    return x .!= y
-end
 
 function mutual_information_mutation_vec(; int_promoter=Int64[], int_wt=Int64[], ct=Int64[], ct_0=Int64[], ct_1=Int64[], l::Int64=160)
     s(x) = .~(x)

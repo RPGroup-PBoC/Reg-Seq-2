@@ -1,42 +1,40 @@
-﻿Condition;Description;C;Replicate 1;Replicate 2
-Glucose;M9 Minimal Media with 0.5% Glucose;;x;x
-Xylose;M9 Minimal Media with 0.5% Xylose;;x;x
-Arabinose;M9 Minimal Media with 0.5% Arabinose;;x;x
-Galactose;M9 Minimal Media with 0.23% Galactose;;x;
-Sodium Salicytate;M9 Minimal Media with 0.5% Glucose and 2.5mM Sodium Salicytate;;x;
-Ethanol (2.5 %);M9 Minimal Media with 0.5% Glucose and 5% Ethanol;;x;
-Stationary Phase (1d);M9 Minimal Media with 0.5% grown to Stationary phase (24h);;x;
-Stationary Phase (3d);;;;
-Cold Shock (1h at 10C);M9 Minimal Media with 0.5% Glucose with 1h at 10C in steady state;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC53247/;x;
-Ampicillin;M9 Minimal Media with 0.5% Glucose and 2mg/L Ampicillin (1/4th of MIC);https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5371073/;x;
-Heatshock;M9 Minimal Media with 0.5% Glucose with 5 min at 42C when reaching steady state;(test that media has reached the desired temperature);x;
-H2O2 (0.1mM 30min);M9 Minimal Media with 0.5% Glucose with added 0.1mM H2O2 at steady state for 30 min;;x;
-LB;;;x;x
-Nirtogen starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with 10% NH4CL and 0.5% Glucose twice; followed by growth for 1h";Wash;x;
-Magnesium starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with NaSO4 at equal concentration and 0.5% Glucose;, followed by growth for 1h.";Wash;x;
-Sulphur starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with MgCl at equal concentration and 0.5% Glucose, followed by growth for 1h.";Wash;x;
-Sodium Salicytate (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase;x;;
-Ampicillin (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase;x;;
-Ethanol (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5% Ethanol for 1h.";Induction of 1h at exponential phase;x;
-Glutamic acid (pH 2.5);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2.5 with 1mM glutamic acid";Wash;x;
-Leucine (10mM);;;;
-2pH (HCl);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2 ";;x;
-Medium Cold shock 19C;"M9 Minimal Media with 0.5% Glucose to steady state,  then growth for 1h at 19C.";1h treatment;x;
-"2,2-Dipyridyl";"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  2,2-Dipyridyl at 5mM for 1h.";1h treatment;x;
-Phenazine Methosulfate;"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  phenazine methosulfate at 100µM for 1h.";1h treatment;x;
-Pyruvate;M9 Minimal Media with 0.5% Pyruvate;;x;
-Galactonate;;;;
-"H2O2 (2.5mM, 10min)";"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2.5mM H2O2 for 10min.";10 min treatment;x;
-Gentamicin;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5µg/ml gentamicin for 1h.";1h treatment;x;
-Copper Sulfate (500µM);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 500 μM CuSO4 for 1h.";500 μM CuSO4 for 1h;x;
-HOCl (4mM);;4 mM HOCl for 1h;;
-Spermidine;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5mM spermidine for 1h.";for 1h;x;
-Serine Hydroxamate;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 0.4 mg/ml serine hydroxamate for 30min.";30 min;x;
-Anaerobic;;;;
-Low Osmolarity;"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h in 0.5 x M9 premix + 0.5% Glucose";;x;
-LB + 0.75M NaCl;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in Standard LB + 0.75M NaCl";;x;
-Low Phosphate;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in in Minimal Media where disodium phosphate and monopotassium phosphate is reduced to 10%.";;x;
-Copper Sulfate (2mM);M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2 mM CuSO4 for 1h.;;;
-Acetate;M9 Minimal Media with 0.5% Sodium Acetate;;;
-Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;
-Anaerobic + Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;
+﻿Index;Condition;Description;C;Replicate 1;Replicate 2
+1;Glucose;M9 Minimal Media with 0.5% Glucose;;x;x
+2;Xylose;M9 Minimal Media with 0.5% Xylose;;x;x
+3;Arabinose;M9 Minimal Media with 0.5% Arabinose;;x;x
+4;Galactose;M9 Minimal Media with 0.23% Galactose;;x;
+5;Sodium Salicytate;M9 Minimal Media with 0.5% Glucose and 2.5mM Sodium Salicytate;;x;
+6;Ethanol (2.5 %);M9 Minimal Media with 0.5% Glucose and 5% Ethanol;;x;
+7;Stationary Phase (1d);M9 Minimal Media with 0.5% grown to Stationary phase (24h);;x;
+8;Stationary Phase (3d);;;;
+9;Cold Shock (1h at 10C);M9 Minimal Media with 0.5% Glucose with 1h at 10C in steady state;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC53247/;x;
+10;Ampicillin;M9 Minimal Media with 0.5% Glucose and 2mg/L Ampicillin (1/4th of MIC);https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5371073/;x;
+11;Heatshock;M9 Minimal Media with 0.5% Glucose with 5 min at 42C when reaching steady state;(test that media has reached the desired temperature);x;
+12;H2O2 (0.1mM 30min);M9 Minimal Media with 0.5% Glucose with added 0.1mM H2O2 at steady state for 30 min;;x;
+13;LB;;;x;x
+14;Nirtogen starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with 10% NH4CL and 0.5% Glucose twice; followed by growth for 1h";Wash;x;
+15;Magnesium starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with NaSO4 at equal concentration and 0.5% Glucose;, followed by growth for 1h.";Wash;x;
+16;Sulphur starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with MgCl at equal concentration and 0.5% Glucose, followed by growth for 1h.";Wash;x;
+17;Sodium Salicytate (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase;x;;
+18;Ampicillin (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase;x;;
+19;Ethanol (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5% Ethanol for 1h.";Induction of 1h at exponential phase;x;
+20;Glutamic acid (pH 2.5);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2.5 with 1mM glutamic acid";Wash;x;
+21;Leucine (10mM);;;;
+22;2pH (HCl);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2 ";;x;
+23;Medium Cold shock 19C;"M9 Minimal Media with 0.5% Glucose to steady state,  then growth for 1h at 19C.";1h treatment;x;
+24;"2,2-Dipyridyl";"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  2,2-Dipyridyl at 5mM for 1h.";1h treatment;x;
+25;Phenazine Methosulfate;"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  phenazine methosulfate at 100µM for 1h.";1h treatment;x;
+28;"H2O2 (2.5mM, 10min)";"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2.5mM H2O2 for 10min.";10 min treatment;x;
+29;Gentamicin;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5µg/ml gentamicin for 1h.";1h treatment;x;
+30;Copper Sulfate (500µM);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 500 μM CuSO4 for 1h.";500 μM CuSO4 for 1h;x;
+31;HOCl (4mM);;4 mM HOCl for 1h;;
+32;Spermidine;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5mM spermidine for 1h.";for 1h;x;
+33;Serine Hydroxamate;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 0.4 mg/ml serine hydroxamate for 30min.";30 min;x;
+34;Anaerobic;;;;
+35;Low Osmolarity;"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h in 0.5 x M9 premix + 0.5% Glucose";;x;
+36;LB + 0.75M NaCl;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in Standard LB + 0.75M NaCl";;x;
+37;Low Phosphate;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in in Minimal Media where disodium phosphate and monopotassium phosphate is reduced to 10%.";;x;
+38;Copper Sulfate (2mM);M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2 mM CuSO4 for 1h.;;;
+39;Acetate;M9 Minimal Media with 0.5% Sodium Acetate;;;
+40;Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;
+41;Anaerobic + Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate;;;

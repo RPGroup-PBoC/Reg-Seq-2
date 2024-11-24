@@ -6,6 +6,7 @@ from bokeh.models import *
 from bokeh.themes import Theme
 from bokeh.transform import linear_cmap
 import glob
+import ast
 
 #############################################
 # Helper functions. Credit to Griffin Chure #
@@ -113,9 +114,7 @@ collapse_df = pd.DataFrame()
 # Go through all files and compact the data
 for file in glob.glob("../../analysis/all_data/footprints/*"):
     df = pd.read_csv(file)
-    df = df.loc[df.d == 0, :]
-    df.drop(columns=['d'], inplace=True)
-    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition']):
+    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition_info']):
         x = group.pos.values
         y = group.mut_info.values
         collapse_df = pd.concat([collapse_df, pd.DataFrame(data={
@@ -130,7 +129,7 @@ for file in glob.glob("../../analysis/all_data/footprints/*"):
 collapse_exshift_df = pd.DataFrame()
 for file in glob.glob("../../analysis/all_data/expression_shifts/*"):
     df = pd.read_csv(file)
-    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition']):
+    for name, group in df.groupby(['promoter', 'replicate', 'growth_condition_info']):
         pos = group.pos.values 
         base = group.base.values                                   
         wt_base = group.wt_base.values
@@ -144,6 +143,15 @@ for file in glob.glob("../../analysis/all_data/expression_shifts/*"):
             'replicate': name[1],
             'growth_condition': name[2],
             })])
+
+
+# import shuffle data
+df_shuffle = pd.read_csv("shuffled_analysis.csv")
+for column in ['mu', 'sigma']:
+    df_shuffle[column] = df_shuffle[column].apply(lambda x: ast.literal_eval(x) if pd.notnull(x) else x)
+
+df_shuffle['rep'] = df_shuffle['rep'].astype(str)
+df_shuffle['gc'] = df_shuffle['gc'].astype(str)
 
 # Import metadata for promoters
 #df_meta = pd.read_csv('./20230525_footprints_meta.csv')
@@ -162,13 +170,16 @@ data = ColumnDataSource(collapse_df)
 exshift = ColumnDataSource(collapse_exshift_df)
 meta = ColumnDataSource(df_meta)
 regulonDB = ColumnDataSource(df_regulonDB)
+shuffle = ColumnDataSource(df_shuffle)
 promoters = list(df['promoter'].unique())
 
 # Set inital settings for plot
-prom_ini = 'yjbJ_predicted'
-gc_ini = 'LB + higher salt concentration - high osmolarity'
+prom_ini = 'araBp'
+gc_ini = 'Arabinose'
 rep_ini = '1'
-d_ini = 1
+d_ini = 2
+back_ini = False
+sigma_multiplier_ini = 0
 
 
 
@@ -180,44 +191,82 @@ _df = collapse_df.loc[(collapse_df['promoter'] == prom_ini)
            ['pos', 'mut_info', 'replicate']]
 
 
-def apply_window(d, pos, mut_info):
+def apply_window(d, pos, mut_info, back_ini, mu, sigma, sigma_multiplier):
     if d == 0:
-        return pos, mut_info
+        return pos, mut_info - back_ini * (mu + sigma_multiplier * sigma)
     else:
-        return pos[d:-d], np.array([np.mean(mut_info[i-d:i+d]) for i in np.arange(d, len(pos)-1)])
+        if back_ini:
+            threshold = np.array(mu) + sigma_multiplier * np.array(sigma)
+            threshold = np.array([np.mean(threshold[i-d:i+d+1]) for i in np.arange(d, len(pos)-d)])
+            smooth_info = np.array([np.mean(mut_info[i-d:i+d+1]) for i in np.arange(d, len(pos)-d)])
+            filtered =  smooth_info - threshold
+            print(mu[0:15])
+            print(sigma[0:15])
+            print(threshold[0:15])
+            print(filtered[0:15])
+            #print(threshold[0:10], smooth_info[0:10], filtered[0:10], np.maximum(filtered, np.zeros(len(filtered)))[0:10])
+            return pos[d:-d], np.maximum(filtered, np.zeros(len(filtered)))
+        else: 
+            filtered = np.array([np.mean(mut_info[i-d:i+d+1]) for i in np.arange(d, len(pos)-d)])
+            return pos[d:-d], filtered
+            
+
 
 
 # put values in ColumnDataSource 
 pos, mut_info = apply_window(
     d_ini, 
     _df.loc[_df['replicate'] == rep_ini, 'pos'].values[0], 
-    _df.loc[_df['replicate'] == rep_ini, 'mut_info'].values[0])
+    _df.loc[_df['replicate'] == rep_ini, 'mut_info'].values[0],
+    back_ini,
+    df_shuffle.loc[(df_shuffle['promoter'] == prom_ini) &
+                   (df_shuffle['rep'] == rep_ini) & 
+                   (df_shuffle['gc_name'] == gc_ini), 'mu'].values[0],
+    df_shuffle.loc[(df_shuffle['promoter'] == prom_ini) &
+                   (df_shuffle['rep'] == rep_ini) & 
+                   (df_shuffle['gc_name'] == gc_ini), 'sigma'].values[0],
+    sigma_multiplier_ini
+)
     
 
 data_display = ColumnDataSource({'pos': pos, 'mut_info': mut_info})
+
+
 
 # put values in ColumnDataSource 
 pos_alt, mut_info_alt = apply_window(
     d_ini, 
     _df.loc[_df['replicate'] == str(-int(rep_ini)+3), 'pos'].values[0], 
-    _df.loc[_df['replicate'] == str(-int(rep_ini)+3), 'mut_info'].values[0])
+    _df.loc[_df['replicate'] == str(-int(rep_ini)+3), 'mut_info'].values[0],
+    back_ini,
+    df_shuffle.loc[(df_shuffle['promoter'] == prom_ini) &
+                   (df_shuffle['rep'] == str(-int(rep_ini)+3)) & 
+                   (df_shuffle['gc_name'] == gc_ini), 'mu'].values[0],
+    df_shuffle.loc[(df_shuffle['promoter'] == prom_ini) &
+                   (df_shuffle['rep'] == str(-int(rep_ini)+3)) & 
+                   (df_shuffle['gc_name'] == gc_ini), 'sigma'].values[0],
+    sigma_multiplier_ini
+)
+
+
 
 
 # create source for comparing replciates
-replicate_comparer = ColumnDataSource({'rep1': mut_info,
-                                       'rep2': mut_info_alt,
+replicate_comparer = ColumnDataSource({'rep1': mut_info / np.sum(mut_info),
+                                       'rep2': mut_info_alt / np.sum(mut_info_alt),
                                        'pos': pos,
 })
 
 # add sum of replicates
-replicate_comparer.data['x'] = replicate_comparer.data['rep1'] + replicate_comparer.data['rep2']
+replicate_comparer.data['x'] = (replicate_comparer.data['rep1'] + replicate_comparer.data['rep2'])/2
 
 # add normalized difference of replicates
-replicate_comparer.data['y'] = np.abs((replicate_comparer.data['rep1'] - replicate_comparer.data['rep2']) / (replicate_comparer.data['rep1'] + replicate_comparer.data['rep2']))
+replicate_comparer.data['y'] = 2 * np.abs((replicate_comparer.data['rep1'] - replicate_comparer.data['rep2']) / (replicate_comparer.data['rep1'] + replicate_comparer.data['rep2']))
 
 # create source for 1:1 line in replicate comparison
 replicate_comparer_line = ColumnDataSource({'x': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])],
                                             'y': [0, np.max([replicate_comparer.data['rep1'], replicate_comparer.data['rep2']])]})
+
 
 
 # extract initial values for expression shift
@@ -248,6 +297,9 @@ df_temp = pd.merge(
     pd.DataFrame(dict(pos=df_temp_rep1['pos'].values[0], base=df_temp_rep1['base'].values[0], expression_shift_1=df_temp_rep1['expression_shift'].values[0])),
     pd.DataFrame(dict(pos=df_temp_rep2['pos'].values[0], base=df_temp_rep2['base'].values[0], expression_shift_2=df_temp_rep2['expression_shift'].values[0])),
     on=["pos", "base"])
+
+df_temp['expression_shift_1'] =  df_temp['expression_shift_1'] / np.std(df_temp['expression_shift_1'].values)
+df_temp['expression_shift_2'] =  df_temp['expression_shift_2'] / np.std(df_temp['expression_shift_2'].values)
 
 df_temp['ex_prod'] = df_temp['expression_shift_1'] * df_temp['expression_shift_2']
 
@@ -280,6 +332,8 @@ prom_selector = Select(options=list(np.sort(promoters)), value=prom_ini)
 gc_selector = Select(options=list(np.sort(collapse_df['growth_condition'].unique())), value=gc_ini)
 rep_selector = Select(options=list(collapse_df['replicate'].unique()), value=rep_ini)
 d_selector = Select(options=[str(x) for x in np.arange(6)], value=str(d_ini))
+backround_selector = Select(options=["yes", "no"], value="no")
+sigma_selector = Select(options=[str(x) for x in np.arange(6)], value="0")
 
 
 # titles for selectors
@@ -287,9 +341,16 @@ prom_title = Div(text="<b>Promoter</b>")
 gc_title = Div(text="<b>Growth Condition</b>")
 rep_title = Div(text="<b>Replicate</b>")
 d_title = Div(text="<b>Window Width</b>")
+background_title = Div(text="<b>Subtract Background</b>")
+sigma_title = Div(text="<b>Threshold</b><br>(number of standard deviations over mean)")
+
+
 
 # metadata for default choice
 meta_ini = df_meta.loc[df_meta['promoter'] == prom_ini, :]
+
+
+
 
 # boxes for description
 prom_desc = Div(text='<div style="width:300px; overflow-wrap: break-word;"><b> Genes controlled by promoter</b>: <br/>' + meta_ini['genes'].values[0] + '<br/><b>Strand: </b><br/>' + meta_ini['direction'].values[0] + '<br/><b>5\':</b><br/>' + str(meta_ini['five_prime'].values[0]) + '<br/><b>3\':</b><br/>' + str(meta_ini['three_prime'].values[0]) + '</div>')
@@ -310,6 +371,9 @@ def update_sites(attr, old, new):
 
 update_sites("", "", "")
 
+
+
+
 # initiate plot windows
 TOOLS = "hover,save,pan,box_zoom,reset,wheel_zoom"
 
@@ -328,7 +392,8 @@ r = p_exshift.rect(x='pos',
                fill_color=linear_cmap('expression_shift', 
                                       bokeh.palettes.interp_palette(["#D14241", "#FFFFFF", "#738FC1"], 100),
                                       low=-1, 
-                                      high=1),
+                                      high=1
+                                     ),
                line_color=None,
                source=exshift_display
 )
@@ -360,7 +425,7 @@ p_info.xaxis.ticker = np.arange(-11, 5) * 10
 p_replicates = bokeh.plotting.figure(width=400, height=300, 
                                 x_axis_label='replicate 1',
                                 y_axis_label='replicate 2',
-                                title="Mutual Information at each base per replicate",
+                                title="Mutual Information (normalized) \nat each base per replicate",
                                 x_axis_type="log",
                                 y_axis_type="log",
                                 tooltips=[('Position', '@pos')],
@@ -372,8 +437,8 @@ p_replicates.line(source=replicate_comparer_line, x='x', y='y', line_dash='dashe
 
 
 p_replicates_ratio = bokeh.plotting.figure(width=400, height=300, 
-                                x_axis_label='Rep 1 + Rep 2',
-                                y_axis_label='(Rep 1 - Rep 2) / (Rep 1 + Rep 2)',
+                                x_axis_label='(Rep 1 + Rep 2) / 2',
+                                y_axis_label='2 (Rep 1 - Rep 2) / (Rep 1 + Rep 2)',
                                 tooltips=[('Position', '@pos')],
                                 tools=TOOLS)
 
@@ -383,7 +448,7 @@ p_replicates_ratio.scatter(source=replicate_comparer, x='x', y='y')
 p_angles = bokeh.plotting.figure(width=400, height=300, 
                                 x_axis_label='|r1_i||r2_i|',
                                 y_axis_label='|cos theta|',
-                                title="Comparing Expression Shift",
+                                title="Comparing Expression Shift\n(normalized)",
                                 tooltips=[('Position', '@pos')],
                                 tools=TOOLS)
 
@@ -401,10 +466,13 @@ args = {
     'exshift_display': exshift_display,
     'data': data,
     'exshift': exshift,
+    'shuffle':shuffle,
     'prom_selector': prom_selector,
     'gc_selector': gc_selector,
     'rep_selector': rep_selector,
     'd_selector': d_selector,
+    'background_selector': backround_selector,
+    'sigma_selector':sigma_selector,
     'prom_desc': prom_desc,
     'meta': meta,
     'regulonDB_desc': regulonDB_desc,
@@ -426,7 +494,7 @@ gc_cb =  load_js(['growth_condition_selector.js', 'footprint_selector.js'], args
 gc_selector.js_on_change('value', gc_cb)
 
 footprint_cb = load_js('footprint_selector.js', args=args)
-for s in [rep_selector, d_selector]:
+for s in [rep_selector, d_selector, backround_selector, sigma_selector]:
     s.js_on_change('value', footprint_cb)
 
 
@@ -435,13 +503,18 @@ selector_box = bokeh.layouts.row(
         prom_title, 
         prom_selector,
         gc_title,
-        gc_selector, 
+        gc_selector,
+        background_title,
+        backround_selector
+        
     ),
     bokeh.layouts.column( 
         rep_title, 
         rep_selector,
         d_title, 
-        d_selector
+        d_selector,
+        sigma_title,
+        sigma_selector
     ),
     prom_desc
 )
@@ -454,10 +527,12 @@ plot = bokeh.layouts.column(
         ),
         bokeh.layouts.column(
             p_replicates,
-            p_replicates_ratio),
+            p_replicates_ratio
+        ),
         bokeh.layouts.column(
             p_angles,
-            p_angles_ecdf)
+            p_angles_ecdf
+        )
     ),
     regulonDB_desc)
 

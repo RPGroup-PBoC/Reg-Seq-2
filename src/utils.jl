@@ -1,5 +1,5 @@
 using BioSequences, CSV, DataFrames
-import BioSequences.reverese_complement
+#import BioSequences.reverese_complement
 using CairoMakie
 
 Base.convert(::Type{String}, x::BioSequences.LongSequence{DNAAlphabet{4}}) = string(x)
@@ -264,7 +264,7 @@ function get_mapping_data()
 end
 
 
-function get_dataset(i, promoter="all";df_map=get_mapping_data())
+function get_dataset(i, promoter="all";df_map=get_mapping_data(), no_match=true)
     dir = @__DIR__
     path = joinpath(split(dir, '/')[1:end-1])
 
@@ -338,12 +338,17 @@ function get_dataset(i, promoter="all";df_map=get_mapping_data())
     replace!(df.ct_0, missing => 0)
     replace!(df.ct_1, missing => 0)
     
-    # identify promoter sequences
-    df = innerjoin(df, df_map, on=:barcode)
-    
     # compute total counts
     insertcols!(df, 1, :ct => df.ct_0 .+ df.ct_1)
     insertcols!(df, 1, :relative_counts => (df.ct_1 .+ 1) ./ (df.ct_0 .+ 1))
+    
+    if no_match
+        return df
+    end
+    
+    # identify promoter sequences
+    df = innerjoin(df, df_map, on=:barcode)
+
     
     # Turn sequences into integer
     insertcols!(df, 3, :int_promoter => make_int.(df[:, :promoter]))
@@ -355,7 +360,11 @@ function get_dataset(i, promoter="all";df_map=get_mapping_data())
 end
 
 
-function _get_reps(gc)
+function _get_reps(gc::Integer)
+    return _get_reps(string(gc))
+end
+
+function _get_reps(gc::AbstractString)
 
     dir = @__DIR__
     path = joinpath(split(dir, '/')[1:end-1])
