@@ -1,3 +1,0 @@
-promoter	type	start	end
-rspAp	rep	-39	-31
-rspAp	act	-71	-50
