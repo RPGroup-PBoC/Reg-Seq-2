@@ -1,0 +1,40 @@
+﻿Index;Condition;Description
+1;Glucose;M9 Minimal Media with 0.5% Glucose
+2;Xylose;M9 Minimal Media with 0.5% Xylose
+3;Arabinose;M9 Minimal Media with 0.5% Arabinose
+4;Galactose;M9 Minimal Media with 0.23% Galactose
+5;Sodium Salicytate;M9 Minimal Media with 0.5% Glucose and 2.5mM Sodium Salicytate
+6;Ethanol (2.5 %);M9 Minimal Media with 0.5% Glucose and 5% Ethanol
+7;Stationary Phase (1d);M9 Minimal Media with 0.5% grown to Stationary phase (24h)
+8;Stationary Phase (3d)
+9;Cold Shock (1h at 10C);M9 Minimal Media with 0.5% Glucose with 1h at 10C in steady state
+10;Ampicillin;M9 Minimal Media with 0.5% Glucose and 2mg/L Ampicillin (1/4th of MIC)
+11;Heatshock;M9 Minimal Media with 0.5% Glucose with 5 min at 42C when reaching steady state
+12;H2O2 (0.1mM 30min);M9 Minimal Media with 0.5% Glucose with added 0.1mM H2O2 at steady state for 30 min
+13;LB;
+14;Nirtogen starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with 10% NH4CL and 0.5% Glucose twice; followed by growth for 1h"
+15;Magnesium starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with NaSO4 at equal concentration and 0.5% Glucose;, followed by growth for 1h."
+16;Sulphur starvation;"M9 Minimal Media with 0.5% Glucose to steady state, then washed with M9 Minimal Media with where MgSO4 is replaced with MgCl at equal concentration and 0.5% Glucose, followed by growth for 1h."
+17;Sodium Salicytate (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase
+18;Ampicillin (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 10mM Sodium Salicytate for 1h.",Induction of 1h at exponential phase
+19;Ethanol (induction);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5% Ethanol for 1h."
+20;Glutamic acid (pH 2.5);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2.5 with 1mM glutamic acid"
+21;Leucine (10mM);
+22;2pH (HCl);"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h with M9 Minimal Media with 0.5% Glucose at pH 2 "
+23;Medium Cold shock 19C;"M9 Minimal Media with 0.5% Glucose to steady state,  then growth for 1h at 19C."
+24;"2,2-Dipyridyl";"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  2,2-Dipyridyl at 5mM for 1h."
+25;Phenazine Methosulfate;"M9 Minimal Media with 0.5% Glucose to steady state,  then induction with  phenazine methosulfate at 100µM for 1h."
+28;"H2O2 (2.5mM, 10min)";"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2.5mM H2O2 for 10min."
+29;Gentamicin;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5µg/ml gentamicin for 1h."
+30;Copper Sulfate (500µM);"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 500 μM CuSO4 for 1h."
+31;HOCl (4mM);
+32;Spermidine;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 5mM spermidine for 1h."
+33;Serine Hydroxamate;"M9 Minimal Media with 0.5% Glucose to steady state, then induction with 0.4 mg/ml serine hydroxamate for 30min."
+34;Anaerobic;
+35;Low Osmolarity;"M9 Minimal Media with 0.5% Glucose to steady state,  then wash (twice) and growth for 1h in 0.5 x M9 premix + 0.5% Glucose"
+36;LB + 0.75M NaCl;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in Standard LB + 0.75M NaCl"
+37;Low Phosphate;"M9 Minimal Media with 0.5% Glucose to steady state, then wash (twice) and growth for 1h in in Minimal Media where disodium phosphate and monopotassium phosphate is reduced to 10%."
+38;Copper Sulfate (2mM);M9 Minimal Media with 0.5% Glucose to steady state, then induction with 2 mM CuSO4 for 1h.
+39;Acetate;M9 Minimal Media with 0.5% Sodium Acetate
+40;Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate
+41;Anaerobic + Nitrate;M9 Minimal Media with 0.5% Glucose with 80mM Potassium Nitrate
